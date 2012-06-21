@@ -3,8 +3,8 @@
 set -e
 
 if [ $# -ne 0 ]; then
-  echo ":main" | ghci -fobject-code -v0 $1
+  echo ":main" | ghci -v0 $1
 else
-  echo ":main" | ghci -fobject-code -v0 src/Specs.hs
+  echo ":main" | ghci -v0 src/Specs.hs
 fi
 
