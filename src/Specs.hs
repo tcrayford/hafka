@@ -1,3 +1,9 @@
 module Specs where
+import Test.Hspec.Monadic
+import Test.Hspec.HUnit()
+import Test.HUnit
 
-main = print "adsf"
+main = hspecX $
+  describe "" $ do
+    it "" $ do
+      2 @?= 1
