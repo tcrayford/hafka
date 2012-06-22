@@ -3,16 +3,12 @@ module Specs where
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
 import Test.HUnit
-import Data.ByteString.Char8
-import qualified Data.ByteString.Char8 as B
-import Network
-import Data.Serialize.Put
-import Data.Digest.CRC32
-import System.IO
+import Data.ByteString.Char8(ByteString)
 import Kafka.Producer
 import Kafka.Consumer
 import Control.Concurrent(threadDelay)
 
+main :: IO ()
 main = hspecX $
   describe "pushing and consuming a message" $ do
     let testProducer = ProducerSettings "test" 0
