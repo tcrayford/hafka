@@ -90,7 +90,6 @@ forceEither :: (Show a) => Either a r -> r
 forceEither (Right res) = res
 forceEither (Left res) = error $ show res
 
-
 runGet' ::  ByteString -> Get a -> Either String a
 runGet' = flip runGet
 

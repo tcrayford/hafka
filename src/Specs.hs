@@ -24,7 +24,7 @@ main = hspecX $
 -- TODO:
 -- produce multiple produce requests on the same socket
 --  use Control.Concurrent.Chan?
--- restart closed sockets automatically
+--  restart closed sockets automatically
 -- produce multiple messages
 -- consume in a delayed loop
 -- request type as an enum
