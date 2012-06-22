@@ -10,7 +10,7 @@ import Data.Serialize.Get
 
 data ConsumerSettings = ConsumerSettings Topic Partition
 
-consumeFirst :: ConsumerSettings -> IO ByteString
+consumeFirst :: ConsumerSettings -> IO Message
 consumeFirst a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
@@ -67,11 +67,11 @@ getDataLength = do
   raw <- getWord32be
   return $ fromIntegral raw
 
-parseMessageSet :: ByteString -> [ByteString]
+parseMessageSet :: ByteString -> [Message]
 parseMessageSet a = parseMessageSet' a [] 0 startingLength
   where startingLength = B.length a - 4
 
-parseMessageSet' :: ByteString -> [ByteString] -> Int -> Int -> [ByteString]
+parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> [Message]
 parseMessageSet' a messages processed totalLength
   | processed <= totalLength = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) totalLength
   | otherwise = messages
@@ -94,8 +94,8 @@ forceEither (Left res) = error $ show res
 runGet' ::  ByteString -> Get a -> Either String a
 runGet' = flip runGet
 
-parseMessage :: ByteString -> ByteString
-parseMessage raw = forceEither $ runGet' raw $ do
+parseMessage :: ByteString -> Message
+parseMessage raw = Message $ forceEither $ runGet' raw $ do
   size <- getWord32be
   _ <- getWord8
   _ <- getWord32be

@@ -5,4 +5,4 @@ newtype Topic = Topic ByteString
 newtype Partition = Partition Int
 newtype Offset = Offset Int
 
-newtype Message = Message ByteString
+newtype Message = Message ByteString deriving (Show, Eq)
