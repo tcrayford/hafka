@@ -13,31 +13,19 @@ data ProducerSettings = ProducerSettings Topic Partition
 produce :: ProducerSettings -> Message -> IO ()
 produce settings message = do
   h <- connectTo "localhost" $ PortNumber 9092
-  B.hPut h req
+  B.hPut h $ fullProduceRequest settings message
   hFlush h
   hClose h
+
+fullProduceRequest :: ProducerSettings -> Message -> ByteString
+fullProduceRequest settings message = runPut $ do
+  putWord32be $ fromIntegral (B.length body)
+  putByteString body
   where
-    m = runPut $ putMessage message
-    body = runPut $ produceRequest settings m
-    req = runPut $ do
-      putWord32be $ fromIntegral (B.length body)
-      putByteString body
+    body = produceRequest settings message
 
-putMessage :: Message -> Put
-putMessage message = do
-  let encoded = encode message
-  putWord32be $ fromIntegral (B.length encoded)
-  putByteString encoded
-
-encode :: Message -> ByteString
-encode (Message message) = runPut $ do
-  putMessageMagic
-  putWord32be (crc32 message)
-  putByteString message
-  where putMessageMagic = putWord8 0
-
-produceRequest ::  ProducerSettings -> ByteString -> Put
-produceRequest settings m = do
+produceRequest ::  ProducerSettings -> Message -> ByteString
+produceRequest settings m = runPut $ do
   putProduceRequestType
   putTopic settings
   putPartition settings
@@ -55,8 +43,22 @@ putTopic (ProducerSettings (Topic t) _) = do
 putPartition ::  ProducerSettings -> Put
 putPartition (ProducerSettings _ (Partition p)) = putWord32be $ fromIntegral p
 
-putMessages ::  ByteString -> Put
-putMessages m = do
-  putWord32be $ fromIntegral (B.length m)
-  putByteString m
+putMessages ::  Message -> Put
+putMessages message = do
+  putWord32be $ fromIntegral (B.length encoded)
+  putByteString encoded
+  where encoded = putMessage message
+
+putMessage :: Message -> ByteString
+putMessage message = runPut $ do
+  let encoded = encode message
+  putWord32be $ fromIntegral (B.length encoded)
+  putByteString encoded
+
+encode :: Message -> ByteString
+encode (Message message) = runPut $ do
+  putMessageMagic
+  putWord32be (crc32 message)
+  putByteString message
+  where putMessageMagic = putWord8 0
 

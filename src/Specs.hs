@@ -26,8 +26,6 @@ main = hspecX $
 --  restart closed sockets automatically
 -- produce multiple messages
 -- consume in a delayed loop
--- request type as an enum
--- newtype all the things
 -- handle error response codes on the consume response
 -- handle failing to parse a message
 -- introduce a Message type
