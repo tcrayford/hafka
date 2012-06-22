@@ -8,7 +8,6 @@ import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Put
 import Data.Digest.CRC32
 import Data.Serialize.Get
-import Unsafe.Coerce
 
 data ConsumerSettings = ConsumerSettings ByteString Int
 
@@ -64,11 +63,10 @@ readDataResponse h = do
   rawMessageSet <- B.hGet h dataLength
   return $ B.drop 2 rawMessageSet
 
-
 getDataLength :: Get Int
 getDataLength = do 
   raw <- getWord32be
-  return $ unsafeCoerce raw
+  return $ fromIntegral raw
   
 parseMessageSet :: ByteString -> [ByteString]
 parseMessageSet a = parseMessageSet' a [] 0 startingLength
@@ -82,7 +80,7 @@ parseMessageSet' a messages processed length
         parsed = parseMessage $ bSplice a processed (messageSize + 4)
 
 getMessageSize :: Int -> ByteString -> Int
-getMessageSize processed raw = unsafeCoerce $ forceEither $ runGet' raw $ do
+getMessageSize processed raw = fromIntegral $ forceEither $ runGet' raw $ do
                                                 skip processed
                                                 getWord32be
 
@@ -100,10 +98,5 @@ parseMessage raw = forceEither $ runGet' raw $ do
   size <- getWord32be
   magic <- getWord8
   checksum <- getWord32be
-  r <- lookAhead g
-  b <- remaining
-  payload <- getByteString $ ((unsafeCoerce size) :: Int) - 5
+  payload <- getByteString $ ((fromIntegral size) :: Int) - 5
   return payload
-  where g = do
-              a <- remaining
-              getByteString a
