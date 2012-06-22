@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Kafka.Producer where
+import Kafka.Types
 import Data.ByteString.Char8
 import qualified Data.ByteString.Char8 as B
 import Network
@@ -10,7 +11,7 @@ import System.IO
 produceRequestID :: Integer
 produceRequestID = 0
 
-data ProducerSettings = ProducerSettings ByteString Int
+data ProducerSettings = ProducerSettings Topic Partition
 
 encode :: ByteString -> ByteString
 encode message = runPut $ do
@@ -46,12 +47,12 @@ produceRequest settings m = do
   putMessages m
 
 putTopic ::  ProducerSettings -> Put
-putTopic (ProducerSettings t _) = do
+putTopic (ProducerSettings (Topic t) _) = do
   putWord16be $ fromIntegral (B.length t)
   putByteString t
 
 putPartition ::  ProducerSettings -> Put
-putPartition (ProducerSettings _ p) = putWord32be $ fromIntegral p
+putPartition (ProducerSettings _ (Partition p)) = putWord32be $ fromIntegral p
 
 putMessages ::  ByteString -> Put
 putMessages m = do

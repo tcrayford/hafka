@@ -12,7 +12,7 @@ import Control.Concurrent(threadDelay)
 main :: IO ()
 main = hspecX $
   describe "pushing and consuming a message" $ do
-    let testProducer = ProducerSettings "test" 0
+    let testProducer = ProducerSettings (Topic "test") (Partition 0)
         testConsumer = ConsumerSettings (Topic "test") (Partition 0)
 
     it "should eventually pop the same message" $ do
