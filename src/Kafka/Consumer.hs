@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Kafka.Consumer where
+import Kafka.Types
 import Network
-import Data.ByteString.Char8
+import Data.ByteString.Char8(ByteString)
 import qualified Data.ByteString.Char8 as B
 import System.IO
 import Data.Serialize.Put
 import Data.Serialize.Get
 
-data ConsumerSettings = ConsumerSettings ByteString Int
+data ConsumerSettings = ConsumerSettings Topic Partition
 
 consumeFirst :: ConsumerSettings -> IO ByteString
 consumeFirst a = do
@@ -23,7 +24,7 @@ consumeRequest a = runPut $ do
   encodeRequest a
 
 encodeRequestSize :: ConsumerSettings -> Put
-encodeRequestSize (ConsumerSettings topic _) = putWord32be $ fromIntegral requestSize
+encodeRequestSize (ConsumerSettings (Topic topic) _) = putWord32be $ fromIntegral requestSize
   where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
 
 encodeRequest ::  ConsumerSettings -> Put
@@ -41,12 +42,12 @@ putRequestType :: Put
 putRequestType = putWord16be $ fromIntegral fetchRequestType
 
 putTopic ::  ConsumerSettings -> Put
-putTopic (ConsumerSettings t _)  = do
+putTopic (ConsumerSettings (Topic t) _)  = do
   putWord16be . fromIntegral $ B.length t
   putByteString t
 
 putPartition ::  ConsumerSettings -> Put
-putPartition (ConsumerSettings _ p) = putWord32be $ fromIntegral p
+putPartition (ConsumerSettings _ (Partition p)) = putWord32be $ fromIntegral p
 
 putOffset :: Put
 putOffset = putWord64be 0
