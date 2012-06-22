@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Producer where
+module Kafka.Producer where
 import Data.ByteString.Char8
 import qualified Data.ByteString.Char8 as B
 import Network
@@ -53,7 +53,7 @@ putTopic (ProducerSettings t _) = do
 putPartition ::  ProducerSettings -> Put
 putPartition (ProducerSettings _ p) = do
   putWord32be $ fromIntegral p
-  
+
 putMessages ::  ByteString -> Put
 putMessages m = do
   putWord32be $ fromIntegral (B.length m)

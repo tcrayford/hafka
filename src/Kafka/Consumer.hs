@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Consumer where
+module Kafka.Consumer where
 import Network
 import Data.ByteString.Char8
 import qualified Data.ByteString.Char8 as B
@@ -64,13 +64,13 @@ readDataResponse h = do
   return $ B.drop 2 rawMessageSet
 
 getDataLength :: Get Int
-getDataLength = do 
+getDataLength = do
   raw <- getWord32be
   return $ fromIntegral raw
-  
+
 parseMessageSet :: ByteString -> [ByteString]
 parseMessageSet a = parseMessageSet' a [] 0 startingLength
-  where startingLength = B.length a - 4 
+  where startingLength = B.length a - 4
 
 parseMessageSet' :: ByteString -> [ByteString] -> Int -> Int -> [ByteString]
 parseMessageSet' a messages processed length

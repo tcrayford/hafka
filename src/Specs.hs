@@ -9,8 +9,8 @@ import Network
 import Data.Serialize.Put
 import Data.Digest.CRC32
 import System.IO
-import Producer
-import Consumer
+import Kafka.Producer
+import Kafka.Consumer
 import Control.Concurrent(threadDelay)
 
 main = hspecX $
