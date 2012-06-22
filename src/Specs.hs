@@ -38,3 +38,4 @@ main = hspecX $
 -- ghc -Wall
 -- higher level api? typeclasses for Produceable/Consumable?
 -- tests are one message off
+-- remove duplication with message headers

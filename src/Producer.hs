@@ -31,7 +31,6 @@ produce settings message = do
   B.hPut h req
   hFlush h
   hClose h
-  --error (show (Prelude.map show (B.unpack req)))
   where
     m = runPut $ putMessage message
     body = runPut $ produceRequest settings m
