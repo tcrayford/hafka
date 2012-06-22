@@ -13,20 +13,7 @@ produceRequestID = 0
 
 data ProducerSettings = ProducerSettings Topic Partition
 
-encode :: ByteString -> ByteString
-encode message = runPut $ do
-  putMessageMagic
-  putWord32be (crc32 message)
-  putByteString message
-  where putMessageMagic = putWord8 0
-
-putMessage :: ByteString -> Put
-putMessage message = do
-  let encoded = encode message
-  putWord32be $ fromIntegral (B.length encoded)
-  putByteString encoded
-
-produce :: ProducerSettings -> ByteString -> IO ()
+produce :: ProducerSettings -> Message -> IO ()
 produce settings message = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h req
@@ -38,6 +25,19 @@ produce settings message = do
     req = runPut $ do
       putWord32be $ fromIntegral (B.length body)
       putByteString body
+
+putMessage :: Message -> Put
+putMessage message = do
+  let encoded = encode message
+  putWord32be $ fromIntegral (B.length encoded)
+  putByteString encoded
+
+encode :: Message -> ByteString
+encode (Message message) = runPut $ do
+  putMessageMagic
+  putWord32be (crc32 message)
+  putByteString message
+  where putMessageMagic = putWord8 0
 
 produceRequest ::  ProducerSettings -> ByteString -> Put
 produceRequest settings m = do

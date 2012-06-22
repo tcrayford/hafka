@@ -16,7 +16,7 @@ main = hspecX $
         testConsumer = ConsumerSettings (Topic "test") (Partition 0)
 
     it "should eventually pop the same message" $ do
-      produce testProducer "hello from hafka"
+      produce testProducer (Message "hello from hafka")
       threadDelay 10000
       result <- consumeFirst testConsumer
       ("hello from hafka" :: ByteString) @=? result
@@ -39,3 +39,4 @@ main = hspecX $
 -- more tests
 -- asString for topic
 -- asInt or whatever for partition
+-- wrapper type for (Foo Topic Parition)
