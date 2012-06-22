@@ -11,6 +11,7 @@ import Data.Digest.CRC32
 import System.IO
 import Producer
 import Consumer
+import Control.Concurrent(threadDelay)
 
 main = hspecX $
   describe "pushing and consuming a message" $ do
@@ -19,8 +20,9 @@ main = hspecX $
 
     it "should eventually pop the same message" $ do
       produce testProducer "hello from hafka"
+      threadDelay 10000
       result <- consumeFirst testConsumer
-      ("hello from hafka" :: ByteString) @?= result
+      ("hello from hafka" :: ByteString) @=? result
 
 -- TODO:
 -- produce multiple produce requests on the same socket
@@ -37,5 +39,6 @@ main = hspecX $
 -- hlint
 -- ghc -Wall
 -- higher level api? typeclasses for Produceable/Consumable?
--- tests are one message off
 -- remove duplication with message headers
+-- do polling to make tests faster
+-- more tests
