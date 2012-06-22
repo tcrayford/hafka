@@ -6,3 +6,9 @@ newtype Partition = Partition Int
 newtype Offset = Offset Int
 
 newtype Message = Message ByteString deriving (Show, Eq)
+
+newtype RequestType = RequestType Int
+
+produceRequestType, fetchRequestType :: RequestType
+produceRequestType = RequestType 0
+fetchRequestType = RequestType 1

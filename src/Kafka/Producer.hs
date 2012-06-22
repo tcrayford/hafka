@@ -8,9 +8,6 @@ import Data.Serialize.Put
 import Data.Digest.CRC32
 import System.IO
 
-produceRequestID :: Integer
-produceRequestID = 0
-
 data ProducerSettings = ProducerSettings Topic Partition
 
 produce :: ProducerSettings -> Message -> IO ()
@@ -41,10 +38,14 @@ encode (Message message) = runPut $ do
 
 produceRequest ::  ProducerSettings -> ByteString -> Put
 produceRequest settings m = do
-  putWord16be 0
+  putProduceRequestType
   putTopic settings
   putPartition settings
   putMessages m
+
+putProduceRequestType :: Put
+putProduceRequestType = putWord16be $ fromIntegral raw
+  where (RequestType raw) = produceRequestType
 
 putTopic ::  ProducerSettings -> Put
 putTopic (ProducerSettings (Topic t) _) = do

@@ -35,11 +35,9 @@ encodeRequest a = do
   putOffset
   putMaxSize
 
-fetchRequestType :: Int
-fetchRequestType = 1
-
 putRequestType :: Put
-putRequestType = putWord16be $ fromIntegral fetchRequestType
+putRequestType = putWord16be $ fromIntegral raw
+  where (RequestType raw) = fetchRequestType
 
 putTopic ::  ConsumerSettings -> Put
 putTopic (ConsumerSettings (Topic t) _)  = do

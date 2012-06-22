@@ -3,7 +3,6 @@ module Specs where
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
 import Test.HUnit
-import Data.ByteString.Char8(ByteString)
 import Kafka.Producer
 import Kafka.Consumer
 import Kafka.Types
@@ -19,7 +18,7 @@ main = hspecX $
       produce testProducer (Message "hello from hafka")
       threadDelay 10000
       result <- consumeFirst testConsumer
-      (Message "hello from hafka") @=? result
+      Message "hello from hafka" @=? result
 
 -- TODO:
 -- produce multiple produce requests on the same socket
