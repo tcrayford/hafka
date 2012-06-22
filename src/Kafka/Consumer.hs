@@ -4,9 +4,7 @@ import Network
 import Data.ByteString.Char8
 import qualified Data.ByteString.Char8 as B
 import System.IO
-import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Put
-import Data.Digest.CRC32
 import Data.Serialize.Get
 
 data ConsumerSettings = ConsumerSettings ByteString Int
@@ -26,7 +24,7 @@ consumeRequest a = runPut $ do
 
 encodeRequestSize :: ConsumerSettings -> Put
 encodeRequestSize (ConsumerSettings topic _) = putWord32be $ fromIntegral requestSize
-  where requestSize = 2 + 2 + (B.length topic) + 4 + 8 + 4
+  where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
 
 encodeRequest ::  ConsumerSettings -> Put
 encodeRequest a = do
@@ -73,8 +71,8 @@ parseMessageSet a = parseMessageSet' a [] 0 startingLength
   where startingLength = B.length a - 4
 
 parseMessageSet' :: ByteString -> [ByteString] -> Int -> Int -> [ByteString]
-parseMessageSet' a messages processed length
-  | processed <= length = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) length
+parseMessageSet' a messages processed totalLength
+  | processed <= totalLength = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) totalLength
   | otherwise = messages
   where messageSize = getMessageSize processed a
         parsed = parseMessage $ bSplice a processed (messageSize + 4)
@@ -96,7 +94,6 @@ runGet' = flip runGet
 parseMessage :: ByteString -> ByteString
 parseMessage raw = forceEither $ runGet' raw $ do
   size <- getWord32be
-  magic <- getWord8
-  checksum <- getWord32be
-  payload <- getByteString $ ((fromIntegral size) :: Int) - 5
-  return payload
+  _ <- getWord8
+  _ <- getWord32be
+  getByteString $ (fromIntegral size :: Int) - 5

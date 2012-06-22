@@ -40,7 +40,7 @@ produce settings message = do
 
 produceRequest ::  ProducerSettings -> ByteString -> Put
 produceRequest settings m = do
-  putWord16be $ fromIntegral 0
+  putWord16be 0
   putTopic settings
   putPartition settings
   putMessages m
@@ -51,8 +51,7 @@ putTopic (ProducerSettings t _) = do
   putByteString t
 
 putPartition ::  ProducerSettings -> Put
-putPartition (ProducerSettings _ p) = do
-  putWord32be $ fromIntegral p
+putPartition (ProducerSettings _ p) = putWord32be $ fromIntegral p
 
 putMessages ::  ByteString -> Put
 putMessages m = do

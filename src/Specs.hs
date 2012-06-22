@@ -15,8 +15,8 @@ import Control.Concurrent(threadDelay)
 
 main = hspecX $
   describe "pushing and consuming a message" $ do
-    let testProducer = (ProducerSettings "test" 0)
-        testConsumer = (ConsumerSettings "test" 0)
+    let testProducer = ProducerSettings "test" 0
+        testConsumer = ConsumerSettings "test" 0
 
     it "should eventually pop the same message" $ do
       produce testProducer "hello from hafka"
