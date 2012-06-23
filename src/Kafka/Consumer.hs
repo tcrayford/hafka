@@ -10,7 +10,7 @@ import Data.Serialize.Get
 import Control.Monad(forever)
 import Control.Concurrent(threadDelay)
 
-data ConsumerSettings = ConsumerSettings Topic Partition
+data ConsumerSettings = ConsumerSettings Topic Partition Offset
 
 consumeFirst :: ConsumerSettings -> IO Message
 consumeFirst a = do
@@ -21,7 +21,7 @@ consumeFirst a = do
   return . Prelude.last $ parseMessageSet result
 
 consumeLoop :: ConsumerSettings -> (Message -> IO b) -> IO ()
-consumeLoop a@(ConsumerSettings topic partition) f = do
+consumeLoop a f = do
   (message, newSettings) <- consume a
   f message
   threadDelay 2000
@@ -36,7 +36,7 @@ consumeRequest a = runPut $ do
   encodeRequest a
 
 encodeRequestSize :: ConsumerSettings -> Put
-encodeRequestSize (ConsumerSettings (Topic topic) _) = putWord32be $ fromIntegral requestSize
+encodeRequestSize (ConsumerSettings (Topic topic) _ _) = putWord32be $ fromIntegral requestSize
   where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
 
 encodeRequest ::  ConsumerSettings -> Put
@@ -52,12 +52,12 @@ putRequestType = putWord16be $ fromIntegral raw
   where (RequestType raw) = fetchRequestType
 
 putTopic ::  ConsumerSettings -> Put
-putTopic (ConsumerSettings (Topic t) _)  = do
+putTopic (ConsumerSettings (Topic t) _ _)  = do
   putWord16be . fromIntegral $ B.length t
   putByteString t
 
 putPartition ::  ConsumerSettings -> Put
-putPartition (ConsumerSettings _ (Partition p)) = putWord32be $ fromIntegral p
+putPartition (ConsumerSettings _ (Partition p) _) = putWord32be $ fromIntegral p
 
 putOffset :: Put
 putOffset = putWord64be 0

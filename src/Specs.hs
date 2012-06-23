@@ -15,7 +15,7 @@ main :: IO ()
 main = hspecX $
   describe "pushing and consuming a message" $ do
     let testProducer = ProducerSettings (Topic "test") (Partition 0)
-        testConsumer = ConsumerSettings (Topic "test") (Partition 0)
+        testConsumer = ConsumerSettings (Topic "test") (Partition 0) (Offset 0)
 
     it "should eventually pop the same message" $ do
       produce testProducer (Message "hello from hafka")
@@ -63,3 +63,4 @@ waitFor result success = do
 -- randomize the messages put on
 -- keep the socket alive whilst consuming forever
 -- restart closed sockets when consuming forever
+-- grep for "::  "
