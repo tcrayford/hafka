@@ -2,7 +2,9 @@
 module Specs where
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
+import Test.Hspec.QuickCheck
 import Test.HUnit
+import Test.QuickCheck
 import Kafka.Producer
 import Kafka.Consumer
 import Kafka.Types
@@ -16,9 +18,13 @@ import Debug.Trace
 
 main :: IO ()
 main = hspecX $
-  describe "pushing and consuming a message" $ do
+  describe "hafka" $ do
+    integrationTest
+    qcProperties
 
-    it "pops the message in a loop" $ do
+integrationTest = 
+  describe "the integrated producer -> consumer loop" $ do
+    it "can pop and push a message" $ do
       partition <- getStdRandom $ randomR (0, 5)
       rawTopic <- getStdRandom $ randomR ('a', 'Z')
       rawMessageChar <- getStdRandom $ randomR ('a', 'Z')
@@ -44,6 +50,15 @@ waitFor result success = do
     (Just found) -> success found
     Nothing -> error "timed out whilst waiting for the message"
 
+instance Arbitrary Message where
+  arbitrary = do
+    a <-  arbitrary
+    return $ Message (B.pack a)
+
+qcProperties = describe "the client" $ do
+  prop "serialize -> deserialize is id" $ do
+    (\message -> parseMessage (putMessage message) == message)
+
 -- TODO:
 -- produce multiple produce requests on the same socket
 --  use Control.Concurrent.Chan?
@@ -53,14 +68,9 @@ waitFor result success = do
 -- handle error response codes on the consume response
 -- handle failing to parse a message
 -- introduce a Message type
--- QC parse and serialize inverting each other
 -- higher level api? typeclasses for Produceable/Consumable?
 -- remove duplication with message headers
 -- do polling to make tests faster
--- more tests
--- asString for topic
--- asInt or whatever for partition
--- wrapper type for (Foo Topic Parition)
 -- introduce a MessageSet type
 -- pop two messages in a loop
 -- randomize the messages put on
