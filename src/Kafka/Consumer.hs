@@ -22,13 +22,18 @@ consumeFirst a = do
 
 consumeLoop :: ConsumerSettings -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
-  (message, newSettings) <- consume a
-  f message
+  (messages, newSettings) <- consume a
+  mapM f messages
   threadDelay 2000
   consumeLoop newSettings f
 
-consume :: ConsumerSettings -> IO (Message, ConsumerSettings)
-consume = undefined
+consume :: ConsumerSettings -> IO ([Message], ConsumerSettings)
+consume a = do
+  h <- connectTo "localhost" $ PortNumber 9092
+  B.hPut h $ consumeRequest a
+  hFlush h
+  result <- readDataResponse h
+  return $ (parseMessageSet result, a)
 
 consumeRequest ::  ConsumerSettings -> ByteString
 consumeRequest a = runPut $ do
@@ -44,7 +49,7 @@ encodeRequest a = do
   putRequestType
   putTopic a
   putPartition a
-  putOffset
+  putOffset a
   putMaxSize
 
 putRequestType :: Put
@@ -59,8 +64,8 @@ putTopic (ConsumerSettings (Topic t) _ _)  = do
 putPartition ::  ConsumerSettings -> Put
 putPartition (ConsumerSettings _ (Partition p) _) = putWord32be $ fromIntegral p
 
-putOffset :: Put
-putOffset = putWord64be 0
+putOffset :: ConsumerSettings -> Put
+putOffset (ConsumerSettings _ _ (Offset offset)) = putWord64be $ fromIntegral offset
 
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB

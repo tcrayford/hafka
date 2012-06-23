@@ -36,7 +36,7 @@ main = hspecX $
 
 waitFor :: MVar a -> (a -> b) -> b
 waitFor result success = do
-  let f = unsafePerformIO $ timeout 1000 $ takeMVar result
+  let f = unsafePerformIO $ timeout 10000 $ takeMVar result
   case f of
     (Just found) -> success found
     Nothing -> error "timed out whilst waiting for the message"
@@ -64,3 +64,5 @@ waitFor result success = do
 -- keep the socket alive whilst consuming forever
 -- restart closed sockets when consuming forever
 -- grep for "::  "
+-- rename ConsumerSettings to ConsumerState
+-- broker should be setup with host/port
