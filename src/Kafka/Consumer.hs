@@ -42,7 +42,7 @@ getFetchData a = do
   hClose h
   return res
 
-consumeRequest ::  ConsumerSettings -> ByteString
+consumeRequest :: ConsumerSettings -> ByteString
 consumeRequest a = runPut $ do
   encodeRequestSize a
   encodeRequest a
@@ -51,7 +51,7 @@ encodeRequestSize :: ConsumerSettings -> Put
 encodeRequestSize (ConsumerSettings (Topic topic) _ _) = putWord32be $ fromIntegral requestSize
   where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
 
-encodeRequest ::  ConsumerSettings -> Put
+encodeRequest :: ConsumerSettings -> Put
 encodeRequest a = do
   putRequestType
   putTopic a
@@ -63,12 +63,12 @@ putRequestType :: Put
 putRequestType = putWord16be $ fromIntegral raw
   where (RequestType raw) = fetchRequestType
 
-putTopic ::  ConsumerSettings -> Put
+putTopic :: ConsumerSettings -> Put
 putTopic (ConsumerSettings (Topic t) _ _)  = do
   putWord16be . fromIntegral $ B.length t
   putByteString t
 
-putPartition ::  ConsumerSettings -> Put
+putPartition :: ConsumerSettings -> Put
 putPartition (ConsumerSettings _ (Partition p) _) = putWord32be $ fromIntegral p
 
 putOffset :: ConsumerSettings -> Put
@@ -118,7 +118,7 @@ forceEither :: (Show a) => Either a r -> r
 forceEither (Right res) = res
 forceEither (Left res) = error $ show res
 
-runGet' ::  ByteString -> Get a -> Either String a
+runGet' :: ByteString -> Get a -> Either String a
 runGet' = flip runGet
 
 parseMessage :: ByteString -> Message

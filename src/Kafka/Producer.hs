@@ -24,7 +24,7 @@ fullProduceRequest settings message = runPut $ do
   where
     body = produceRequest settings message
 
-produceRequest ::  ProducerSettings -> Message -> ByteString
+produceRequest :: ProducerSettings -> Message -> ByteString
 produceRequest settings m = runPut $ do
   putProduceRequestType
   putTopic settings
@@ -35,15 +35,15 @@ putProduceRequestType :: Put
 putProduceRequestType = putWord16be $ fromIntegral raw
   where (RequestType raw) = produceRequestType
 
-putTopic ::  ProducerSettings -> Put
+putTopic :: ProducerSettings -> Put
 putTopic (ProducerSettings (Topic t) _) = do
   putWord16be $ fromIntegral (B.length t)
   putByteString t
 
-putPartition ::  ProducerSettings -> Put
+putPartition :: ProducerSettings -> Put
 putPartition (ProducerSettings _ (Partition p)) = putWord32be $ fromIntegral p
 
-putMessages ::  Message -> Put
+putMessages :: Message -> Put
 putMessages message = do
   putWord32be $ fromIntegral (B.length encoded)
   putByteString encoded

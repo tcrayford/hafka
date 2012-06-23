@@ -76,7 +76,6 @@ qcProperties = describe "the client" $ do
 -- randomize the messages put on
 -- keep the socket alive whilst consuming forever
 -- restart closed sockets when consuming forever
--- grep for "::  "
 -- rename ConsumerSettings to Consumer
 -- broker should be setup with host/port
 -- write a test for the offset increasing after parsing a message set
