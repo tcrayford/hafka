@@ -10,7 +10,11 @@ import Data.Serialize.Get
 import Control.Monad(forever)
 import Control.Concurrent(threadDelay)
 
-data ConsumerSettings = ConsumerSettings Topic Partition Offset
+data ConsumerSettings = ConsumerSettings {
+    cTopic :: Topic
+  , cPartition :: Partition
+  , cOffset :: Offset
+  }
 
 consumeFirst :: ConsumerSettings -> IO Message
 consumeFirst a = do
@@ -18,7 +22,7 @@ consumeFirst a = do
   B.hPut h $ consumeRequest a
   hFlush h
   result <- readDataResponse h
-  return . Prelude.last $ parseMessageSet result
+  return . Prelude.last $ fst $ parseMessageSet result a
 
 consumeLoop :: ConsumerSettings -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
@@ -33,7 +37,7 @@ consume a = do
   B.hPut h $ consumeRequest a
   hFlush h
   result <- readDataResponse h
-  return $ (parseMessageSet result, a)
+  return $ parseMessageSet result a
 
 consumeRequest ::  ConsumerSettings -> ByteString
 consumeRequest a = runPut $ do
@@ -82,16 +86,22 @@ getDataLength = do
   raw <- getWord32be
   return $ fromIntegral raw
 
-parseMessageSet :: ByteString -> [Message]
-parseMessageSet a = parseMessageSet' a [] 0 startingLength
+parseMessageSet :: ByteString -> ConsumerSettings -> ([Message], ConsumerSettings)
+parseMessageSet a settings = parseMessageSet' a [] 0 startingLength settings
   where startingLength = B.length a - 4
 
-parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> [Message]
-parseMessageSet' a messages processed totalLength
-  | processed <= totalLength = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) totalLength
-  | otherwise = messages
+parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> ConsumerSettings -> ([Message], ConsumerSettings)
+parseMessageSet' a messages processed totalLength settings
+  | processed <= totalLength = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) totalLength newSettings
+  | otherwise = (messages, settings)
   where messageSize = getMessageSize processed a
         parsed = parseMessage $ bSplice a processed (messageSize + 4)
+        newSettings = increaseOffsetBy settings processed
+
+increaseOffsetBy :: ConsumerSettings -> Int -> ConsumerSettings
+increaseOffsetBy settings increment = settings { cOffset = newOffset }
+  where newOffset = Offset (current + increment)
+        (Offset current) = cOffset settings
 
 getMessageSize :: Int -> ByteString -> Int
 getMessageSize processed raw = fromIntegral $ forceEither $ runGet' raw $ do

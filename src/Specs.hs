@@ -64,5 +64,5 @@ waitFor result success = do
 -- keep the socket alive whilst consuming forever
 -- restart closed sockets when consuming forever
 -- grep for "::  "
--- rename ConsumerSettings to ConsumerState
+-- rename ConsumerSettings to Consumer
 -- broker should be setup with host/port
