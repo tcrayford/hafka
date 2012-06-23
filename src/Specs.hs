@@ -10,29 +10,32 @@ import Control.Concurrent(threadDelay, forkIO)
 import Control.Concurrent.MVar
 import System.Timeout
 import System.IO.Unsafe
+import System.Random
+import qualified Data.ByteString.Char8 as B
+import Debug.Trace
 
 main :: IO ()
 main = hspecX $
   describe "pushing and consuming a message" $ do
-    let testProducer = ProducerSettings (Topic "test") (Partition 0)
-        testConsumer = ConsumerSettings (Topic "test") (Partition 0) (Offset 0)
-
-    it "should eventually pop the same message" $ do
-      produce testProducer (Message "hello from hafka")
-      threadDelay 10000
-      result <- consumeFirst testConsumer
-      Message "hello from hafka" @=? result
 
     it "pops the message in a loop" $ do
+      partition <- getStdRandom $ randomR (0, 5)
+      rawTopic <- getStdRandom $ randomR ('a', 'Z')
+      rawMessageChar <- getStdRandom $ randomR ('a', 'Z')
+
+      let topic = B.pack [rawTopic, rawTopic, rawTopic]
+          testProducer = ProducerSettings (Topic topic) (Partition partition)
+          testConsumer = ConsumerSettings (Topic topic) (Partition partition) (Offset 0)
+          rawMessage = B.pack [rawMessageChar, rawMessageChar, rawMessageChar]
       result <- newEmptyMVar
-      produce testProducer (Message "hello to the loop")
+      produce testProducer (Message rawMessage)
       forkIO $ consumeLoop testConsumer (\message ->
-        if message == Message "hello to the loop" then
+        if message == Message rawMessage then
           putMVar result message
         else
           return ())
       waitFor result (\found ->
-        Message "hello to the loop" @=? found)
+        Message rawMessage@=? found)
 
 waitFor :: MVar a -> (a -> b) -> b
 waitFor result success = do
@@ -66,3 +69,4 @@ waitFor result success = do
 -- grep for "::  "
 -- rename ConsumerSettings to Consumer
 -- broker should be setup with host/port
+-- write a test for the offset increasing after parsing a message set

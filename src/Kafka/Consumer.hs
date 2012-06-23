@@ -18,10 +18,7 @@ data ConsumerSettings = ConsumerSettings {
 
 consumeFirst :: ConsumerSettings -> IO Message
 consumeFirst a = do
-  h <- connectTo "localhost" $ PortNumber 9092
-  B.hPut h $ consumeRequest a
-  hFlush h
-  result <- readDataResponse h
+  result <- getFetchData a
   return . Prelude.last $ fst $ parseMessageSet result a
 
 consumeLoop :: ConsumerSettings -> (Message -> IO b) -> IO ()
@@ -33,11 +30,15 @@ consumeLoop a f = do
 
 consume :: ConsumerSettings -> IO ([Message], ConsumerSettings)
 consume a = do
+  result <- getFetchData a
+  return $ parseMessageSet result a
+
+getFetchData :: ConsumerSettings -> IO ByteString
+getFetchData a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
   hFlush h
-  result <- readDataResponse h
-  return $ parseMessageSet result a
+  readDataResponse h
 
 consumeRequest ::  ConsumerSettings -> ByteString
 consumeRequest a = runPut $ do
@@ -124,3 +125,4 @@ parseMessage raw = Message $ forceEither $ runGet' raw $ do
   _ <- getWord8
   _ <- getWord32be
   getByteString $ (fromIntegral size :: Int) - 5
+
