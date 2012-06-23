@@ -6,7 +6,10 @@ import Test.HUnit
 import Kafka.Producer
 import Kafka.Consumer
 import Kafka.Types
-import Control.Concurrent(threadDelay)
+import Control.Concurrent(threadDelay, forkIO)
+import Control.Concurrent.MVar
+import System.Timeout
+import System.IO.Unsafe
 
 main :: IO ()
 main = hspecX $
@@ -19,6 +22,24 @@ main = hspecX $
       threadDelay 10000
       result <- consumeFirst testConsumer
       Message "hello from hafka" @=? result
+
+    it "pops the message in a loop" $ do
+      result <- newEmptyMVar
+      produce testProducer (Message "hello to the loop")
+      forkIO $ consumeLoop testConsumer (\message ->
+        if message == Message "hello to the loop" then
+          putMVar result message
+        else
+          return ())
+      waitFor result (\found ->
+        Message "hello to the loop" @=? found)
+
+waitFor :: MVar a -> (a -> b) -> b
+waitFor result success = do
+  let f = unsafePerformIO $ timeout 1000 $ takeMVar result
+  case f of
+    (Just found) -> success found
+    Nothing -> error "timed out whilst waiting for the message"
 
 -- TODO:
 -- produce multiple produce requests on the same socket
@@ -37,3 +58,8 @@ main = hspecX $
 -- asString for topic
 -- asInt or whatever for partition
 -- wrapper type for (Foo Topic Parition)
+-- introduce a MessageSet type
+-- pop two messages in a loop
+-- randomize the messages put on
+-- keep the socket alive whilst consuming forever
+-- restart closed sockets when consuming forever

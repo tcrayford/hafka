@@ -7,6 +7,8 @@ import qualified Data.ByteString.Char8 as B
 import System.IO
 import Data.Serialize.Put
 import Data.Serialize.Get
+import Control.Monad(forever)
+import Control.Concurrent(threadDelay)
 
 data ConsumerSettings = ConsumerSettings Topic Partition
 
@@ -17,6 +19,16 @@ consumeFirst a = do
   hFlush h
   result <- readDataResponse h
   return . Prelude.last $ parseMessageSet result
+
+consumeLoop :: ConsumerSettings -> (Message -> IO b) -> IO ()
+consumeLoop a@(ConsumerSettings topic partition) f = do
+  (message, newSettings) <- consume a
+  f message
+  threadDelay 2000
+  consumeLoop newSettings f
+
+consume :: ConsumerSettings -> IO (Message, ConsumerSettings)
+consume = undefined
 
 consumeRequest ::  ConsumerSettings -> ByteString
 consumeRequest a = runPut $ do
