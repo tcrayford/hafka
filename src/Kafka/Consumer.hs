@@ -9,30 +9,30 @@ import Data.Serialize.Put
 import Data.Serialize.Get
 import Control.Concurrent(threadDelay)
 
-data ConsumerSettings = ConsumerSettings {
+data Consumer = Consumer {
     cTopic :: Topic
   , cPartition :: Partition
   , cOffset :: Offset
   }
 
-consumeFirst :: ConsumerSettings -> IO Message
+consumeFirst :: Consumer -> IO Message
 consumeFirst a = do
   result <- getFetchData a
   return . Prelude.last $ fst $ parseMessageSet result a
 
-consumeLoop :: ConsumerSettings -> (Message -> IO b) -> IO ()
+consumeLoop :: Consumer -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
   (messages, newSettings) <- consume a
   mapM_ f messages
   threadDelay 2000
   consumeLoop newSettings f
 
-consume :: ConsumerSettings -> IO ([Message], ConsumerSettings)
+consume :: Consumer -> IO ([Message], Consumer)
 consume a = do
   result <- getFetchData a
   return $ parseMessageSet result a
 
-getFetchData :: ConsumerSettings -> IO ByteString
+getFetchData :: Consumer -> IO ByteString
 getFetchData a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
@@ -41,16 +41,16 @@ getFetchData a = do
   hClose h
   return res
 
-consumeRequest :: ConsumerSettings -> ByteString
+consumeRequest :: Consumer -> ByteString
 consumeRequest a = runPut $ do
   encodeRequestSize a
   encodeRequest a
 
-encodeRequestSize :: ConsumerSettings -> Put
-encodeRequestSize (ConsumerSettings (Topic topic) _ _) = putWord32be $ fromIntegral requestSize
+encodeRequestSize :: Consumer -> Put
+encodeRequestSize (Consumer (Topic topic) _ _) = putWord32be $ fromIntegral requestSize
   where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
 
-encodeRequest :: ConsumerSettings -> Put
+encodeRequest :: Consumer -> Put
 encodeRequest a = do
   putRequestType
   putTopic a
@@ -62,16 +62,16 @@ putRequestType :: Put
 putRequestType = putWord16be $ fromIntegral raw
   where (RequestType raw) = fetchRequestType
 
-putTopic :: ConsumerSettings -> Put
-putTopic (ConsumerSettings (Topic t) _ _)  = do
+putTopic :: Consumer -> Put
+putTopic (Consumer (Topic t) _ _)  = do
   putWord16be . fromIntegral $ B.length t
   putByteString t
 
-putPartition :: ConsumerSettings -> Put
-putPartition (ConsumerSettings _ (Partition p) _) = putWord32be $ fromIntegral p
+putPartition :: Consumer -> Put
+putPartition (Consumer _ (Partition p) _) = putWord32be $ fromIntegral p
 
-putOffset :: ConsumerSettings -> Put
-putOffset (ConsumerSettings _ _ (Offset offset)) = putWord64be $ fromIntegral offset
+putOffset :: Consumer -> Put
+putOffset (Consumer _ _ (Offset offset)) = putWord64be $ fromIntegral offset
 
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB
@@ -88,11 +88,11 @@ getDataLength = do
   raw <- getWord32be
   return $ fromIntegral raw
 
-parseMessageSet :: ByteString -> ConsumerSettings -> ([Message], ConsumerSettings)
+parseMessageSet :: ByteString -> Consumer -> ([Message], Consumer)
 parseMessageSet a = parseMessageSet' a [] 0 startingLength
   where startingLength = B.length a - 4
 
-parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> ConsumerSettings -> ([Message], ConsumerSettings)
+parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> Consumer -> ([Message], Consumer)
 parseMessageSet' a messages processed totalLength settings
   | processed <= totalLength = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) totalLength newSettings
   | otherwise = (messages, settings)
@@ -100,7 +100,7 @@ parseMessageSet' a messages processed totalLength settings
         parsed = parseMessage $ bSplice a processed (messageSize + 4)
         newSettings = increaseOffsetBy settings processed
 
-increaseOffsetBy :: ConsumerSettings -> Int -> ConsumerSettings
+increaseOffsetBy :: Consumer -> Int -> Consumer
 increaseOffsetBy settings increment = settings { cOffset = newOffset }
   where newOffset = Offset (current + increment)
         (Offset current) = cOffset settings

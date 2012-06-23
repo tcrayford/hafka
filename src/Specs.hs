@@ -33,7 +33,7 @@ integrationTest =
 
       let topic = B.pack [rawTopic, rawTopic, rawTopic]
           testProducer = ProducerSettings (Topic topic) (Partition partition)
-          testConsumer = ConsumerSettings (Topic topic) (Partition partition) (Offset 0)
+          testConsumer = Consumer (Topic topic) (Partition partition) (Offset 0)
           rawMessage = B.pack [rawMessageChar, rawMessageChar, rawMessageChar]
       result <- newEmptyMVar
       produce testProducer (Message rawMessage)
@@ -41,14 +41,14 @@ integrationTest =
         when (message == Message rawMessage) $
           putMVar result message)
       waitFor result (\found ->
-        Message rawMessage@=? found)
+        Message rawMessage @=? found) ("timed out waiting for " ++ show rawMessage ++ " to be delivered")
 
-waitFor :: MVar a -> (a -> b) -> b
-waitFor result success = do
+waitFor :: MVar a -> (a -> b) -> String -> b
+waitFor result success message = do
   let f = unsafePerformIO $ timeout 10000 $ takeMVar result
   case f of
     (Just found) -> success found
-    Nothing -> error "timed out whilst waiting for the message"
+    Nothing -> error message
 
 instance Arbitrary Message where
   arbitrary = do
@@ -56,9 +56,12 @@ instance Arbitrary Message where
     return $ Message (B.pack a)
 
 qcProperties :: Specs
-qcProperties = describe "the client" $
+qcProperties = describe "the client" $ do
   prop "serialize -> deserialize is id" $
     \message -> parseMessage (putMessage message) == message
+
+  prop "serialized message length is 1 + 4 + n" $
+    \message@(Message raw) -> getMessageSize 0 (putMessage message) == 1 + 4 + B.length raw
 
 -- TODO:
 -- produce multiple produce requests on the same socket
@@ -77,6 +80,5 @@ qcProperties = describe "the client" $
 -- randomize the messages put on
 -- keep the socket alive whilst consuming forever
 -- restart closed sockets when consuming forever
--- rename ConsumerSettings to Consumer
 -- broker should be setup with host/port
 -- write a test for the offset increasing after parsing a message set
