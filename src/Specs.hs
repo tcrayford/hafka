@@ -8,7 +8,7 @@ import Test.QuickCheck
 import Kafka.Producer
 import Kafka.Consumer
 import Kafka.Types
-import Control.Concurrent(threadDelay, forkIO)
+import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar
 import System.Timeout
 import System.IO.Unsafe
@@ -22,6 +22,7 @@ main = hspecX $
     integrationTest
     qcProperties
 
+integrationTest :: Specs
 integrationTest = 
   describe "the integrated producer -> consumer loop" $
     it "can pop and push a message" $ do
@@ -35,7 +36,7 @@ integrationTest =
           rawMessage = B.pack [rawMessageChar, rawMessageChar, rawMessageChar]
       result <- newEmptyMVar
       produce testProducer (Message rawMessage)
-      forkIO $ consumeLoop testConsumer (\message ->
+      _ <- forkIO $ consumeLoop testConsumer (\message ->
         when (message == Message rawMessage) $
           putMVar result message)
       waitFor result (\found ->
@@ -53,6 +54,7 @@ instance Arbitrary Message where
     a <-  arbitrary
     return $ Message (B.pack a)
 
+qcProperties :: Specs
 qcProperties = describe "the client" $
   prop "serialize -> deserialize is id" $
     \message -> parseMessage (putMessage message) == message

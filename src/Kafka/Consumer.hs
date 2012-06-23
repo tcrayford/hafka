@@ -7,7 +7,6 @@ import qualified Data.ByteString.Char8 as B
 import System.IO
 import Data.Serialize.Put
 import Data.Serialize.Get
-import Control.Monad(forever)
 import Control.Concurrent(threadDelay)
 
 data ConsumerSettings = ConsumerSettings {
@@ -24,7 +23,7 @@ consumeFirst a = do
 consumeLoop :: ConsumerSettings -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
   (messages, newSettings) <- consume a
-  mapM f messages
+  mapM_ f messages
   threadDelay 2000
   consumeLoop newSettings f
 
@@ -90,7 +89,7 @@ getDataLength = do
   return $ fromIntegral raw
 
 parseMessageSet :: ByteString -> ConsumerSettings -> ([Message], ConsumerSettings)
-parseMessageSet a settings = parseMessageSet' a [] 0 startingLength settings
+parseMessageSet a = parseMessageSet' a [] 0 startingLength
   where startingLength = B.length a - 4
 
 parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> ConsumerSettings -> ([Message], ConsumerSettings)
