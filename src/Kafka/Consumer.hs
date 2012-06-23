@@ -38,7 +38,9 @@ getFetchData a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
   hFlush h
-  readDataResponse h
+  res <- readDataResponse h
+  hClose h
+  return res
 
 consumeRequest ::  ConsumerSettings -> ByteString
 consumeRequest a = runPut $ do
