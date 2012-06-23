@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Specs where
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
