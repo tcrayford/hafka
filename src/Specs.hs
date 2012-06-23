@@ -14,7 +14,7 @@ import System.Timeout
 import System.IO.Unsafe
 import System.Random
 import qualified Data.ByteString.Char8 as B
-import Debug.Trace
+import Control.Monad(when)
 
 main :: IO ()
 main = hspecX $
@@ -23,7 +23,7 @@ main = hspecX $
     qcProperties
 
 integrationTest = 
-  describe "the integrated producer -> consumer loop" $ do
+  describe "the integrated producer -> consumer loop" $
     it "can pop and push a message" $ do
       partition <- getStdRandom $ randomR (0, 5)
       rawTopic <- getStdRandom $ randomR ('a', 'Z')
@@ -36,10 +36,8 @@ integrationTest =
       result <- newEmptyMVar
       produce testProducer (Message rawMessage)
       forkIO $ consumeLoop testConsumer (\message ->
-        if message == Message rawMessage then
-          putMVar result message
-        else
-          return ())
+        when (message == Message rawMessage) $
+          putMVar result message)
       waitFor result (\found ->
         Message rawMessage@=? found)
 
@@ -55,9 +53,9 @@ instance Arbitrary Message where
     a <-  arbitrary
     return $ Message (B.pack a)
 
-qcProperties = describe "the client" $ do
-  prop "serialize -> deserialize is id" $ do
-    (\message -> parseMessage (putMessage message) == message)
+qcProperties = describe "the client" $
+  prop "serialize -> deserialize is id" $
+    \message -> parseMessage (putMessage message) == message
 
 -- TODO:
 -- produce multiple produce requests on the same socket
