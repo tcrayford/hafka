@@ -7,12 +7,12 @@ import Test.QuickCheck
 import Kafka.Producer
 import Kafka.Consumer
 import Kafka.Types
-import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar
-import System.Timeout
 import qualified Data.ByteString.Char8 as B
-import Control.Monad(when, void)
 import Test.QuickCheck.Monadic
+import Specs.IntegrationHelper
+import Control.Concurrent(forkIO)
+import Control.Monad(when)
 
 main :: IO ()
 main = hspecX $
@@ -25,7 +25,6 @@ integrationTest =
   describe "the integrated producer -> consumer loop" $
     prop "can pop and push a message" integrated
 
-
 integrated :: Partition -> Topic -> Message -> Property
 integrated partition topic message = monadicIO $ do
       let (testProducer, testConsumer) = coupledProducerConsumer topic partition
@@ -35,11 +34,8 @@ integrated partition topic message = monadicIO $ do
       run $ recordMatching testConsumer message result
 
       waitFor result (\found ->
-        assert (message == found)
+          assert (message == found)
         ) ("timed out waiting for " ++ show message ++ " to be delivered")
-
-coupledProducerConsumer :: Topic -> Partition -> (ProducerSettings, Consumer)
-coupledProducerConsumer t p = (ProducerSettings t p, Consumer t p $ Offset 0)
 
 recordMatching :: Consumer -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
@@ -47,13 +43,6 @@ recordMatching c original r = do
     when (original == message) $
       putMVar r message)
   return ()
-
-waitFor :: MVar a -> (a -> PropertyM IO ()) -> String -> PropertyM IO ()
-waitFor result success message = do
-  f <- run $ timeout 1000000 $ takeMVar result
-  case f of
-    (Just found) -> void $ success found
-    Nothing -> error message
 
 qcProperties :: Specs
 qcProperties = describe "the client" $ do
