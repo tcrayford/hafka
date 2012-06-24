@@ -106,22 +106,22 @@ increaseOffsetBy settings increment = settings { cOffset = newOffset }
         (Offset current) = cOffset settings
 
 parseMessageSize :: Int -> ByteString -> Int
-parseMessageSize processed raw = fromIntegral $ forceEither $ runGet' raw $ do
+parseMessageSize processed raw = fromIntegral $ forceEither raw $ runGet' raw $ do
                                                 skip processed
                                                 getWord32be
 
 bSplice :: ByteString -> Int -> Int -> ByteString
 bSplice a start end = B.take end (B.drop start a)
 
-forceEither :: (Show a) => Either a r -> r
-forceEither (Right res) = res
-forceEither (Left res) = error $ show res
+forceEither :: (Show a) => ByteString -> Either a r -> r
+forceEither _ (Right res) = res
+forceEither raw (Left res) = error $ "error parsing " ++ show raw ++ "with: " ++ show res
 
 runGet' :: ByteString -> Get a -> Either String a
 runGet' = flip runGet
 
 parseMessage :: ByteString -> Message
-parseMessage raw = Message $ forceEither $ runGet' raw $ do
+parseMessage raw = Message $ forceEither raw $ runGet' raw $ do
   size <- getWord32be
   _ <- getWord8
   _ <- getWord32be
