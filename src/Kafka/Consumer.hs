@@ -96,7 +96,7 @@ parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> Consumer -> ([Messa
 parseMessageSet' a messages processed totalLength settings
   | processed <= totalLength = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) totalLength newSettings
   | otherwise = (messages, settings)
-  where messageSize = getMessageSize processed a
+  where messageSize = parseMessageSize processed a
         parsed = parseMessage $ bSplice a processed (messageSize + 4)
         newSettings = increaseOffsetBy settings processed
 
@@ -105,8 +105,8 @@ increaseOffsetBy settings increment = settings { cOffset = newOffset }
   where newOffset = Offset (current + increment)
         (Offset current) = cOffset settings
 
-getMessageSize :: Int -> ByteString -> Int
-getMessageSize processed raw = fromIntegral $ forceEither $ runGet' raw $ do
+parseMessageSize :: Int -> ByteString -> Int
+parseMessageSize processed raw = fromIntegral $ forceEither $ runGet' raw $ do
                                                 skip processed
                                                 getWord32be
 
@@ -125,5 +125,5 @@ parseMessage raw = Message $ forceEither $ runGet' raw $ do
   size <- getWord32be
   _ <- getWord8
   _ <- getWord32be
-  getByteString $ (fromIntegral size :: Int) - 5
+  getByteString $ fromIntegral size - 5
 
