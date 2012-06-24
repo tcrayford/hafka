@@ -10,7 +10,6 @@ import Kafka.Types
 import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar
 import System.Timeout
-import System.Random
 import qualified Data.ByteString.Char8 as B
 import Control.Monad(when, void)
 import Test.QuickCheck.Monadic
@@ -24,9 +23,10 @@ main = hspecX $
 integrationTest :: Specs
 integrationTest = 
   describe "the integrated producer -> consumer loop" $
-    prop "can pop and push a message" $ integrated
+    prop "can pop and push a message" integrated
 
 
+integrated :: Partition -> Topic -> Message -> Property
 integrated partition topic message = monadicIO $ do
       let (testProducer, testConsumer) = coupledProducerConsumer topic partition
       result <- run newEmptyMVar
@@ -37,21 +37,6 @@ integrated partition topic message = monadicIO $ do
       waitFor result (\found ->
         assert (message == found)
         ) ("timed out waiting for " ++ show message ++ " to be delivered")
-
-instance Arbitrary Partition where
-  arbitrary = do
-    a <- elements [0..5]
-    return $ Partition a
-
-instance Arbitrary Topic where
-  arbitrary = do
-    a <- suchThat (listOf $ elements ['a'..'z']) (not . null)
-    return $ Topic $ B.pack a
-
-instance Arbitrary Message where
-  arbitrary = do
-    a <- suchThat (listOf $ elements ['a'..'z']) (not . null)
-    return $ Message (B.pack a)
 
 coupledProducerConsumer :: Topic -> Partition -> (ProducerSettings, Consumer)
 coupledProducerConsumer t p = (ProducerSettings t p, Consumer t p $ Offset 0)
@@ -77,6 +62,25 @@ qcProperties = describe "the client" $ do
 
   prop "serialized message length is 1 + 4 + n" $
     \message@(Message raw) -> parseMessageSize 0 (putMessage message) == 1 + 4 + B.length raw
+
+instance Arbitrary Partition where
+  arbitrary = do
+    a <- elements [0..5]
+    return $ Partition a
+
+instance Arbitrary Topic where
+  arbitrary = do
+    a <- nonEmptyString
+    return $ Topic $ B.pack a
+
+instance Arbitrary Message where
+  arbitrary = do
+    a <- nonEmptyString
+    return $ Message (B.pack a)
+
+nonEmptyString :: Gen String
+nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
+
 
 -- TODO:
 -- produce multiple produce requests on the same socket
