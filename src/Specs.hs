@@ -11,7 +11,7 @@ import Control.Concurrent.MVar
 import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck.Monadic
 import Specs.IntegrationHelper
-import Control.Concurrent(forkIO, killThread, myThreadId)
+import Control.Concurrent(forkIO)
 import Control.Monad(when)
 
 main :: IO ()
@@ -37,18 +37,16 @@ integrated partition topic message = monadicIO $ do
 
 recordMatching :: Consumer -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
-  forkIO $ consumeLoop c go
+  _ <- forkIO $ consumeLoop c go
   return ()
 
   where
     go :: Message -> IO ()
-    go = (\message ->
-      when (original == message) $ finish message)
+    go message = when (original == message) $ finish message
     finish :: Message -> IO ()
     finish message = do
               putMVar r message
-              t <- myThreadId
-              killThread t
+              killCurrent
 
 messageProperties :: Specs
 messageProperties = describe "the client" $ do
