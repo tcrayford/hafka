@@ -10,10 +10,10 @@ import Test.QuickCheck.Monadic
 coupledProducerConsumer :: Topic -> Partition -> (ProducerSettings, Consumer)
 coupledProducerConsumer t p = (ProducerSettings t p, Consumer t p $ Offset 0)
 
-waitFor :: MVar a -> (a -> PropertyM IO ()) -> String -> PropertyM IO ()
-waitFor result success message = do
-  f <- run $ timeout 1000000 $ takeMVar result
+waitFor :: MVar a -> String -> IO ()
+waitFor result message = do
+  f <- timeout 1000000 $ takeMVar result
   case f of
-    (Just found) -> void $ success found
+    (Just found) -> return ()
     Nothing -> error message
 

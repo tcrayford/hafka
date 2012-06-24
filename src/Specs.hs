@@ -11,7 +11,7 @@ import Control.Concurrent.MVar
 import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck.Monadic
 import Specs.IntegrationHelper
-import Control.Concurrent(forkIO, killThread, ThreadId)
+import Control.Concurrent(forkIO, killThread, myThreadId)
 import Control.Monad(when)
 
 main :: IO ()
@@ -31,18 +31,24 @@ integrated partition topic message = monadicIO $ do
       result <- run newEmptyMVar
 
       run $ produce testProducer message
-      tId <- run $ recordMatching testConsumer message result
+      run $ recordMatching testConsumer message result
 
-      waitFor result (\found -> do
-          run $ killThread tId
-          assert (message == found)
-        ) ("timed out waiting for " ++ show message ++ " to be delivered")
+      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
 
-recordMatching :: Consumer -> Message -> MVar Message -> IO ThreadId
-recordMatching c original r = 
-  forkIO $ consumeLoop c (\message ->
-    when (original == message) $
-      putMVar r message)
+recordMatching :: Consumer -> Message -> MVar Message -> IO ()
+recordMatching c original r = do
+  forkIO $ consumeLoop c go
+  return ()
+
+  where
+    go :: Message -> IO ()
+    go = (\message ->
+      when (original == message) $ finish message)
+    finish :: Message -> IO ()
+    finish message = do
+              putMVar r message
+              t <- myThreadId
+              killThread t
 
 messageProperties :: Specs
 messageProperties = describe "the client" $ do
