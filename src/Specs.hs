@@ -79,7 +79,6 @@ nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 --  use Control.Concurrent.Chan?
 --  restart closed sockets automatically
 -- produce multiple messages
--- consume in a delayed loop
 -- handle error response codes on the consume response
 -- handle failing to parse a message
 -- introduce a Message type
@@ -87,8 +86,7 @@ nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 -- remove duplication with message headers
 -- do polling to make tests faster
 -- introduce a MessageSet type
--- pop two messages in a loop
--- randomize the messages put on
+-- a test: messages should be delivered in order
 -- keep the socket alive whilst consuming forever
 -- restart closed sockets when consuming forever
 -- broker should be setup with host/port
