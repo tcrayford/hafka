@@ -18,7 +18,7 @@ main :: IO ()
 main = hspecX $
   describe "hafka" $ do
     integrationTest
-    qcProperties
+    messageProperties
 
 integrationTest :: Specs
 integrationTest = 
@@ -44,8 +44,8 @@ recordMatching c original r = do
       putMVar r message)
   return ()
 
-qcProperties :: Specs
-qcProperties = describe "the client" $ do
+messageProperties :: Specs
+messageProperties = describe "the client" $ do
   prop "serialize -> deserialize is id" $
     \message -> parseMessage (putMessage message) == message
 
@@ -69,7 +69,6 @@ instance Arbitrary Message where
 
 nonEmptyString :: Gen String
 nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
-
 
 -- TODO:
 -- produce multiple produce requests on the same socket
