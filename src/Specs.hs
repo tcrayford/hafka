@@ -23,10 +23,10 @@ main = hspecX $
 integrationTest :: Specs
 integrationTest = 
   describe "the integrated producer -> consumer loop" $
-    prop "can pop and push a message" integrated
+    prop "can pop and push a message" produceToConsume
 
-integrated :: Partition -> Topic -> Message -> Property
-integrated partition topic message = monadicIO $ do
+produceToConsume :: Partition -> Topic -> Message -> Property
+produceToConsume partition topic message = monadicIO $ do
       let (testProducer, testConsumer) = coupledProducerConsumer topic partition
       result <- run newEmptyMVar
 
