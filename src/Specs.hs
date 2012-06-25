@@ -74,21 +74,4 @@ instance Arbitrary Message where
 nonEmptyString :: Gen String
 nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 
--- TODO:
--- produce multiple produce requests on the same socket
---  use Control.Concurrent.Chan?
---  restart closed sockets automatically
--- show error codes from kafka responses
--- produce multiple messages
--- handle error response codes on the consume response
--- handle failing to parse a message
--- introduce a Message type
--- higher level api? typeclasses for Produceable/Consumable?
--- remove duplication with message headers
--- do polling to make tests faster
--- introduce a MessageSet type
--- a test: messages should be delivered in order
--- keep the socket alive whilst consuming forever
--- restart closed sockets when consuming forever
--- broker should be setup with host/port
--- write a test for the offset increasing after parsing a message set
+-- higher level api? typeclasses for Produceable, Consumeable?
