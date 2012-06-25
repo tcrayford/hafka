@@ -12,3 +12,5 @@ newtype RequestType = RequestType Int
 produceRequestType, fetchRequestType :: RequestType
 produceRequestType = RequestType 0
 fetchRequestType = RequestType 1
+
+data ErrorCode = Unknown | Success | OffsetOutOfRange | InvalidMessage | WrongPartition | InvalidFetchSize

@@ -78,6 +78,7 @@ nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 -- produce multiple produce requests on the same socket
 --  use Control.Concurrent.Chan?
 --  restart closed sockets automatically
+-- show error codes from kafka responses
 -- produce multiple messages
 -- handle error response codes on the consume response
 -- handle failing to parse a message
