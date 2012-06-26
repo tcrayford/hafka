@@ -15,12 +15,12 @@ import Control.Concurrent(forkIO)
 import Control.Monad(when)
 
 main :: IO ()
-main = hspecX $
+main = hspec $
   describe "hafka" $ do
     integrationTest
     messageProperties
 
-integrationTest :: Specs
+integrationTest :: Spec
 integrationTest = 
   describe "the integrated producer -> consumer loop" $
     prop "can pop and push a message" produceToConsume
@@ -48,7 +48,7 @@ recordMatching c original r = do
               putMVar r message
               killCurrent
 
-messageProperties :: Specs
+messageProperties :: Spec
 messageProperties = describe "the client" $ do
   prop "serialize -> deserialize is id" $
     \message -> parseMessage (putMessage message) == message
