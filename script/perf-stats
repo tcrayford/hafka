@@ -21,7 +21,15 @@ produce100() {
   echo "`(cd src && ./perf produce/100p | find_mean)`" 
 }
 
+consume10() {
+  echo "`(cd src && ./perf consume/10c | find_mean)`"
+}
+
+consume100() {
+  echo "`(cd src && ./perf consume/100c | find_mean)`"
+}
+
 # Get the hash
 hash="`git log -1 --pretty=%h`"
 
-echo "$hash,`produce10`,`produce100`"
+echo "$hash,`produce10`,`produce100`,`consume10`,`consume100`"

@@ -3,5 +3,5 @@
 start=$1
 end=$2
 
-echo "hash, produce-10-mean, produce-100-mean"
+echo "hash, produce-10-mean, produce-100-mean, consume-10-mean, consume-100-mean"
 $(dirname $0)/run-command-on-git-revisions -v $start $end script/perf-stats
