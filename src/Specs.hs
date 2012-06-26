@@ -2,23 +2,28 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Specs where
 import Test.Hspec.Monadic
+import Test.Hspec.HUnit
+import Test.HUnit
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Kafka.Producer
 import Kafka.Consumer
 import Kafka.Types
+import Kafka.Response
 import Control.Concurrent.MVar
 import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck.Monadic
 import Specs.IntegrationHelper
 import Control.Concurrent(forkIO)
 import Control.Monad(when)
+import Data.Serialize.Put
 
 main :: IO ()
 main = hspec $
   describe "hafka" $ do
     integrationTest
     messageProperties
+    parsingErrorCode
 
 integrationTest :: Spec
 integrationTest = 
@@ -55,6 +60,16 @@ messageProperties = describe "the client" $ do
 
   prop "serialized message length is 1 + 4 + n" $
     \message@(Message raw) -> parseMessageSize 0 (putMessage message) == 1 + 4 + B.length raw
+
+parsingErrorCode :: Spec
+parsingErrorCode = describe "the client" $ do
+  it "parses an error code" $ do
+    let b = putErrorCode 4
+    parseErrorCode b @?= InvalidFetchSize
+
+putErrorCode code = runPut $ do
+  putWord32be 100
+  putWord16be $ fromIntegral code
 
 instance Arbitrary Partition where
   arbitrary = do
