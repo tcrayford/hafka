@@ -30,9 +30,9 @@ integrationTest =
   describe "the integrated producer -> consumer loop" $
     prop "can pop and push a message" produceToConsume
 
-produceToConsume :: Partition -> Topic -> Message -> Property
-produceToConsume partition topic message = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer topic partition
+produceToConsume :: Stream -> Message -> Property
+produceToConsume stream message = monadicIO $ do
+      let (testProducer, testConsumer) = coupledProducerConsumer stream
       result <- run newEmptyMVar
 
       run $ produce testProducer message
@@ -79,6 +79,12 @@ instance Arbitrary Topic where
   arbitrary = do
     a <- nonEmptyString
     return $ Topic $ B.pack a
+
+instance Arbitrary Stream where
+  arbitrary = do
+    t <- arbitrary
+    p <- arbitrary
+    return $! Stream t p
 
 instance Arbitrary Message where
   arbitrary = do

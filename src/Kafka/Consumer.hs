@@ -12,8 +12,7 @@ import Data.Serialize.Get
 import Control.Concurrent(threadDelay)
 
 data Consumer = Consumer {
-    cTopic :: Topic
-  , cPartition :: Partition
+    cStream :: Stream
   , cOffset :: Offset
   }
 
@@ -48,7 +47,7 @@ consumeRequest a = runPut $ do
   encodeRequest a
 
 encodeRequestSize :: Consumer -> Put
-encodeRequestSize (Consumer (Topic topic) _ _) = putWord32be $ fromIntegral requestSize
+encodeRequestSize (Consumer (Stream (Topic topic) _) _) = putWord32be $ fromIntegral requestSize
   where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
 
 encodeRequest :: Consumer -> Put
@@ -64,15 +63,15 @@ putRequestType = putWord16be $ fromIntegral raw
   where (RequestType raw) = fetchRequestType
 
 putTopic :: Consumer -> Put
-putTopic (Consumer (Topic t) _ _)  = do
+putTopic (Consumer (Stream (Topic t) _) _)  = do
   putWord16be . fromIntegral $ B.length t
   putByteString t
 
 putPartition :: Consumer -> Put
-putPartition (Consumer _ (Partition p) _) = putWord32be $ fromIntegral p
+putPartition (Consumer (Stream _ (Partition p)) _) = putWord32be $ fromIntegral p
 
 putOffset :: Consumer -> Put
-putOffset (Consumer _ _ (Offset offset)) = putWord64be $ fromIntegral offset
+putOffset (Consumer _ (Offset offset)) = putWord64be $ fromIntegral offset
 
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB

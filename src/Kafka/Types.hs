@@ -7,9 +7,6 @@ newtype Offset = Offset Int deriving (Show, Eq)
 data Stream = Stream Topic Partition deriving (Show, Eq)
 newtype Message = Message ByteString deriving (Show, Eq)
 
-stream :: ByteString -> Int -> Stream
-stream topic partition = Stream (Topic topic) (Partition partition)
-
 newtype RequestType = RequestType Int
 
 produceRequestType, fetchRequestType :: RequestType
