@@ -2,6 +2,7 @@
 module Kafka.Consumer where
 import Kafka.Types
 import Kafka.Parsing
+import Kafka.Response
 import Network
 import Data.ByteString.Char8(ByteString)
 import qualified Data.ByteString.Char8 as B
@@ -26,9 +27,13 @@ consumeLoop a f = do
 consume :: Consumer -> IO ([Message], Consumer)
 consume a = do
   result <- getFetchData a
-  return $ parseMessageSet result a
+  case result of
+    (Right r) -> return $! parseMessageSet r a
+    (Left r) -> do 
+      print ("error parsing response: " ++ show r)
+      return ([], a)
 
-getFetchData :: Consumer -> IO ByteString
+getFetchData :: Consumer -> IO (Either ErrorCode ByteString)
 getFetchData a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
@@ -72,12 +77,15 @@ putOffset (Consumer _ _ (Offset offset)) = putWord64be $ fromIntegral offset
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB
 
-readDataResponse :: Handle -> IO ByteString
+readDataResponse :: Handle -> IO (Either ErrorCode ByteString)
 readDataResponse h = do
   rawLength <- B.hGet h 4
   let (Right dataLength) = runGet getDataLength rawLength
-  rawMessageSet <- B.hGet h dataLength
-  return $ B.drop 2 rawMessageSet
+  rawResponse <- B.hGet h dataLength
+  let x = parseErrorCode rawResponse
+  case x of
+    Success -> return $! Right $ B.drop 2 rawResponse
+    e -> return $! Left e
 
 getDataLength :: Get Int
 getDataLength = do
