@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Kafka.Consumer where
 import Kafka.Types
+import Kafka.Parsing
 import Network
 import Data.ByteString.Char8(ByteString)
 import qualified Data.ByteString.Char8 as B
@@ -112,13 +113,6 @@ parseMessageSize processed raw = fromIntegral $ forceEither raw $ runGet' raw $ 
 
 bSplice :: ByteString -> Int -> Int -> ByteString
 bSplice a start end = B.take end (B.drop start a)
-
-forceEither :: (Show a) => ByteString -> Either a r -> r
-forceEither _ (Right res) = res
-forceEither raw (Left res) = error $ "error parsing " ++ show raw ++ "with: " ++ show res
-
-runGet' :: ByteString -> Get a -> Either String a
-runGet' = flip runGet
 
 parseMessage :: ByteString -> Message
 parseMessage raw = Message $ forceEither raw $ runGet' raw $ do

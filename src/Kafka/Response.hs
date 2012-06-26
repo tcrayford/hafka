@@ -3,6 +3,7 @@ import Kafka.Types
 import Data.ByteString.Char8
 import Data.Serialize.Get
 import Data.List(lookup)
+import Kafka.Parsing
 
 parseErrorCode :: ByteString -> ErrorCode
 parseErrorCode raw = forceEither raw $ runGet' raw $ do
@@ -21,8 +22,3 @@ lookupErrorCode c = forceMaybe $ lookup c [
     (4, InvalidFetchSize)
   ]
 
-forceEither :: (Show a) => ByteString -> Either a r -> r
-forceEither _ (Right res) = res
-forceEither raw (Left res) = error $ "error parsing " ++ show raw ++ "with: " ++ show res
-
-runGet' = flip runGet
