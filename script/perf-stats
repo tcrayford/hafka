@@ -21,5 +21,8 @@ produce100() {
   echo "`(cd src && ./perf produce/100p | find_mean)`" 
 }
 
-echo "produce-10-mean, produce-100-mean"
-echo "`produce10`,`produce100`"
+# Get the hash
+hash="`git log -1 --pretty=%h`"
+
+echo "hash, produce-10-mean, produce-100-mean"
+echo "$hash,`produce10`,`produce100`"
