@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+
+(cd src &&
+  ghc --make -O2 -o ./perf Bench/Main.hs)
+
+trim() {
+  sed 's/ *$//g'
+}
+
+find_mean() {
+  grep 'mean:' | cut -d ':' -f 2 | cut -d ',' -f 1 | trim
+}
+
+produce10() {
+  echo "`(cd src && ./perf produce/10p | find_mean)`" 
+}
+
+produce100() {
+  echo "`(cd src && ./perf produce/100p | find_mean)`" 
+}
+
+echo "produce-10-mean, produce-100-mean"
+echo "`produce10`,`produce100`"

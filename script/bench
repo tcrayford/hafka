@@ -3,5 +3,5 @@
 set -e
 
 (cd src &&
-  echo ":main" | ghci -v0 Bench.hs)
+  echo ":main" | ghci -v0 Bench/Main.hs)
 

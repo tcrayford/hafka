@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Bench where
 import Criterion.Main
 import qualified Data.ByteString.Char8 as B
 import Kafka.Producer
