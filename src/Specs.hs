@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Specs where
 import Test.Hspec.Monadic
-import Test.Hspec.HUnit
+import Test.Hspec.HUnit()
 import Test.HUnit
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
@@ -62,13 +62,13 @@ messageProperties = describe "the client" $ do
     \message@(Message raw) -> parseMessageSize 0 (putMessage message) == 1 + 4 + B.length raw
 
 parsingErrorCode :: Spec
-parsingErrorCode = describe "the client" $ do
+parsingErrorCode = describe "the client" $
   it "parses an error code" $ do
     let b = putErrorCode 4
     parseErrorCode b @?= InvalidFetchSize
 
-putErrorCode code = runPut $ do
-  putWord16be $ fromIntegral code
+putErrorCode :: Int -> B.ByteString
+putErrorCode code = runPut $ putWord16be $ fromIntegral code
 
 instance Arbitrary Partition where
   arbitrary = do

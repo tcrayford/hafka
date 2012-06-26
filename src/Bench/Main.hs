@@ -18,7 +18,7 @@ main = do
       c100 = rawMessageSet 100
       producerSettings = ProducerSettings (Topic "test") (Partition 0)
       consumerSettings = Consumer (Topic "test") (Partition 0) (Offset 0)
-      eval = (liftIO . evaluate $ rnf [p10, p100, c10, c100])
+      eval = liftIO . evaluate $ rnf [p10, p100, c10, c100]
 
   defaultMainWith defaultConfig eval [
       bgroup "produce" [
@@ -31,7 +31,7 @@ main = do
       ]
     ]
 
-rawMessage n = id $! B.pack . take n $ repeat 'a'
+rawMessage n = B.pack . take n $ repeat 'a'
 
-rawMessageSet n = id $! putMessage message
+rawMessageSet n = putMessage message
   where message = Message $! B.pack . take n $ repeat 'a'

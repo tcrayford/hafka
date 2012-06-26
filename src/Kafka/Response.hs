@@ -1,18 +1,19 @@
 module Kafka.Response where
 import Kafka.Types
-import Data.ByteString.Char8
 import Data.Serialize.Get
-import Data.List(lookup)
 import Kafka.Parsing
+import Data.ByteString.Char8(ByteString)
 
 parseErrorCode :: ByteString -> ErrorCode
 parseErrorCode raw = forceEither raw $ runGet' raw $ do
   c <- getWord16be
   return $! lookupErrorCode c
 
+forceMaybe :: Maybe ErrorCode -> ErrorCode
 forceMaybe (Just a) = a
 forceMaybe Nothing = Unknown
 
+lookupErrorCode :: (Eq a, Num a) => a -> ErrorCode
 lookupErrorCode c = forceMaybe $ lookup c [
     (-1, Unknown),
     (0, Success),
