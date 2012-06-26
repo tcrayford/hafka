@@ -16,11 +16,6 @@ data Consumer = Consumer {
   , cOffset :: Offset
   }
 
-consumeFirst :: Consumer -> IO Message
-consumeFirst a = do
-  result <- getFetchData a
-  return . Prelude.last $ fst $ parseMessageSet result a
-
 consumeLoop :: Consumer -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
   (messages, newSettings) <- consume a
