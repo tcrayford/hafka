@@ -97,11 +97,13 @@ parseMessageSet a = parseMessageSet' a [] 0 startingLength
 
 parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> Consumer -> ([Message], Consumer)
 parseMessageSet' a messages processed totalLength settings
-  | processed <= totalLength = parseMessageSet' a (messages ++ [parsed]) (processed + 4 + messageSize) totalLength newSettings
+  | processed <= totalLength = parseMessageSet' a newMessages newProcessed totalLength newSettings
   | otherwise = (messages, settings)
   where messageSize = parseMessageSize processed a
         parsed = parseMessage $ bSplice a processed (messageSize + 4)
         newSettings = increaseOffsetBy settings processed
+        newMessages = (messages ++ [parsed])
+        newProcessed = processed + 4 + messageSize
 
 increaseOffsetBy :: Consumer -> Int -> Consumer
 increaseOffsetBy settings increment = settings { cOffset = newOffset }
