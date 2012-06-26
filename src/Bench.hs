@@ -7,8 +7,8 @@ import Kafka.Types
 
 main = defaultMain [
     bgroup "produce" [
-      bench "10" $ whnf (fullProduceRequest producerSettings) (Message $ rawMessage 10)
-      , bench "100" $ whnf (fullProduceRequest producerSettings) (Message $ rawMessage 100)
+      bench "10p" $ whnf (fullProduceRequest producerSettings) (Message $ rawMessage 10)
+      , bench "100p" $ whnf (fullProduceRequest producerSettings) (Message $ rawMessage 100)
     ]
   ]
   where
