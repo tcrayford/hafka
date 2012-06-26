@@ -6,7 +6,6 @@ import Data.List(lookup)
 
 parseErrorCode :: ByteString -> ErrorCode
 parseErrorCode raw = forceEither raw $ runGet' raw $ do
-  skip 4
   c <- getWord16be
   return $! lookupErrorCode c
 

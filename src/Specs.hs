@@ -68,7 +68,6 @@ parsingErrorCode = describe "the client" $ do
     parseErrorCode b @?= InvalidFetchSize
 
 putErrorCode code = runPut $ do
-  putWord32be 100
   putWord16be $ fromIntegral code
 
 instance Arbitrary Partition where
