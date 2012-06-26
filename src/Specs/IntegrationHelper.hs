@@ -7,7 +7,7 @@ import System.Timeout
 import Control.Concurrent(killThread, myThreadId)
 
 coupledProducerConsumer :: Topic -> Partition -> (ProducerSettings, Consumer)
-coupledProducerConsumer t p = (ProducerSettings t p, Consumer t p $ Offset 0)
+coupledProducerConsumer t p = (ProducerSettings $ Stream t p, Consumer t p $ Offset 0)
 
 waitFor :: MVar a -> String -> IO ()
 waitFor result message = do
