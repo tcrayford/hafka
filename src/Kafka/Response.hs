@@ -13,12 +13,12 @@ forceMaybe (Just a) = a
 forceMaybe Nothing = Unknown
 
 lookupErrorCode c = forceMaybe $ lookup c [
-  (-1, Unknown),
-  (0, Success),
-  (1, OffsetOutOfRange),
-  (2, InvalidMessage),
-  (3, WrongPartition),
-  (4, InvalidFetchSize)
+    (-1, Unknown),
+    (0, Success),
+    (1, OffsetOutOfRange),
+    (2, InvalidMessage),
+    (3, WrongPartition),
+    (4, InvalidFetchSize)
   ]
 
 forceEither :: (Show a) => ByteString -> Either a r -> r
