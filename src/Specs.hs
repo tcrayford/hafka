@@ -8,6 +8,7 @@ import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Kafka.Producer
 import Kafka.Consumer
+import Kafka.Consumer.KeepAlive
 import Kafka.Types
 import Kafka.Response
 import Control.Concurrent.MVar
@@ -30,6 +31,7 @@ integrationTest =
   describe "the integrated producer -> consumer loop" $ do
     prop "can pop and push a message" produceToConsume
     prop "can produce multiple messages" deliversWhenProducingMultipleMessages
+    prop "can consume with a keepalive" consumesWithKeepAlive
 
 produceToConsume :: Stream -> Message -> Property
 produceToConsume stream message = monadicIO $ do
@@ -50,6 +52,19 @@ deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
       run $ recordMatching testConsumer m2 result
 
       run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered")
+
+consumesWithKeepAlive :: Stream -> Message -> Property
+consumesWithKeepAlive stream message = monadicIO $ do
+      let (testProducer, testConsumer) = coupledProducerConsumer stream
+      result <- run newEmptyMVar
+
+      run $ produce testProducer [message]
+      c <- run (keepAlive testConsumer)
+      run $ recordMatching c message result
+
+      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
+
+
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
@@ -106,3 +121,5 @@ nonEmptyString :: Gen String
 nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 
 -- higher level api? typeclasses for Produceable, Consumeable?
+-- TODO: close the socket, then try to consume
+-- put the basic consumer in Kafka.Consumer.Basic

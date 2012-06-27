@@ -1,6 +1,8 @@
 module Kafka.Network(
-  N.PortID(..),
-  connectTo
+    N.PortID(..)
+  , connectTo
+  , socketToHandle
+  , IOMode(..)
   ) where
 import Network.Socket
 import Network.BSD
@@ -39,4 +41,3 @@ firstSuccessful (p:ps) = catchIO p $ \e ->
 catchIO :: IO a -> (Exception.IOException -> IO a) -> IO a
 catchIO = Exception.catch
 
---socketToHandle sock ReadWriteMode
