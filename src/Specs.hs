@@ -17,7 +17,6 @@ import Specs.IntegrationHelper
 import Control.Concurrent(forkIO)
 import Control.Monad(when)
 import Data.Serialize.Put
-import Data.List(foldl')
 
 main :: IO ()
 main = hspec $

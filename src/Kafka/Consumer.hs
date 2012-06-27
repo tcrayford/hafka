@@ -27,14 +27,14 @@ instance Consumer BasicConsumer where
     result <- getFetchData a
     case result of
       (Right r) -> return $! Right (r, a)
-      (Left r) -> do 
-        return $! Left $ r
+      (Left r) -> return $! Left r
   getOffset (BasicConsumer _ o) = o
   getStream (BasicConsumer s _) = s
   increaseOffsetBy settings increment = settings { cOffset = newOffset }
     where newOffset = Offset (current + increment)
           (Offset current) = cOffset settings
 
+consume' :: (Consumer c) => c -> IO ([Message], c)
 consume' c = do
   result <- consume c
   case result of
@@ -130,7 +130,7 @@ parseMessageSet' a messages processed totalLength settings
   where messageSize = parseMessageSize processed a
         parsed = parseMessage $ bSplice a processed (messageSize + 4)
         newSettings = increaseOffsetBy settings processed
-        newMessages = (messages ++ [parsed])
+        newMessages = messages ++ [parsed]
         newProcessed = processed + 4 + messageSize
 
 parseMessageSize :: Int -> ByteString -> Int
