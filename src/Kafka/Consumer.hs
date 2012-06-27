@@ -17,35 +17,28 @@ data BasicConsumer = BasicConsumer {
   }
 
 class Consumer c where
-  consume :: c -> IO (Either ErrorCode (ByteString, c))
+  consume :: c -> IO ([Message], c)
   getOffset :: c -> Offset
   getStream :: c -> Stream
   increaseOffsetBy :: c -> Int -> c
 
 instance Consumer BasicConsumer where
-  consume a = do
-    result <- getFetchData a
+  consume c = do
+    result <- getFetchData c
     case result of
-      (Right r) -> return $! Right (r, a)
-      (Left r) -> return $! Left r
+      (Right r) -> return $! parseMessageSet r c
+      (Left r) -> do 
+        print ("error parsing response: " ++ show r)
+        return ([], c)
   getOffset (BasicConsumer _ o) = o
   getStream (BasicConsumer s _) = s
   increaseOffsetBy settings increment = settings { cOffset = newOffset }
     where newOffset = Offset (current + increment)
           (Offset current) = cOffset settings
 
-consume' :: (Consumer c) => c -> IO ([Message], c)
-consume' c = do
-  result <- consume c
-  case result of
-    (Right (r, c')) -> return $! parseMessageSet r c'
-    (Left r) -> do 
-      print ("error parsing response: " ++ show r)
-      return ([], c)
-
 consumeLoop :: (Consumer c) => c -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
-  (messages, newSettings) <- consume' a
+  (messages, newSettings) <- consume a
   mapM_ f messages
   threadDelay 2000
   consumeLoop newSettings f
