@@ -10,21 +10,21 @@ import System.IO
 
 data ProducerSettings = ProducerSettings Stream
 
-produce :: ProducerSettings -> Message -> IO ()
-produce settings message = do
+produce :: ProducerSettings -> [Message] -> IO ()
+produce settings messages = do
   h <- connectTo "localhost" $ PortNumber 9092
-  B.hPut h $ fullProduceRequest settings message
+  B.hPut h $ fullProduceRequest settings messages
   hFlush h
   hClose h
 
-fullProduceRequest :: ProducerSettings -> Message -> ByteString
-fullProduceRequest settings message = runPut $ do
+fullProduceRequest :: ProducerSettings -> [Message] -> ByteString
+fullProduceRequest settings messages = runPut $ do
   putWord32be $ fromIntegral (B.length body)
   putByteString body
   where
-    body = produceRequest settings message
+    body = produceRequest settings messages
 
-produceRequest :: ProducerSettings -> Message -> ByteString
+produceRequest :: ProducerSettings -> [Message] -> ByteString
 produceRequest settings m = runPut $ do
   putProduceRequestType
   putTopic settings
@@ -43,11 +43,11 @@ putTopic (ProducerSettings (Stream (Topic t) _)) = do
 putPartition :: ProducerSettings -> Put
 putPartition (ProducerSettings (Stream _ (Partition p))) = putWord32be $ fromIntegral p
 
-putMessages :: Message -> Put
-putMessages message = do
+putMessages :: [Message] -> Put
+putMessages messages = do
   putWord32be $ fromIntegral (B.length encoded)
   putByteString encoded
-  where encoded = putMessage message
+  where encoded = B.concat $ Prelude.map putMessage messages
 
 putMessage :: Message -> ByteString
 putMessage message = runPut $ do

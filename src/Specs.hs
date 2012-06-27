@@ -17,6 +17,7 @@ import Specs.IntegrationHelper
 import Control.Concurrent(forkIO)
 import Control.Monad(when)
 import Data.Serialize.Put
+import Data.List(foldl')
 
 main :: IO ()
 main = hspec $
@@ -27,18 +28,29 @@ main = hspec $
 
 integrationTest :: Spec
 integrationTest = 
-  describe "the integrated producer -> consumer loop" $
+  describe "the integrated producer -> consumer loop" $ do
     prop "can pop and push a message" produceToConsume
+    prop "can produce multiple messages" deliversWhenProducingMultipleMessages
 
 produceToConsume :: Stream -> Message -> Property
 produceToConsume stream message = monadicIO $ do
       let (testProducer, testConsumer) = coupledProducerConsumer stream
       result <- run newEmptyMVar
 
-      run $ produce testProducer message
+      run $ produce testProducer [message]
       run $ recordMatching testConsumer message result
 
       run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
+
+deliversWhenProducingMultipleMessages :: Stream -> Message -> Message -> Property
+deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
+      let (testProducer, testConsumer) = coupledProducerConsumer stream
+      result <- run newEmptyMVar
+
+      run $ produce testProducer [m1, m2]
+      run $ recordMatching testConsumer m2 result
+
+      run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered")
 
 recordMatching :: Consumer -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
