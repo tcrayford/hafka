@@ -18,19 +18,37 @@ data KeepAliveConsumer = KeepAliveConsumer {
 
 instance Consumer KeepAliveConsumer where
   consume c = do
+    newC <- withReconnected c
     let s = kaSocket c
-    send s $ consumeRequest c
+    send s $ consumeRequest newC
     result <- readDataResponse' s
     case result of
-      (Right r) -> return $! parseMessageSet r c
+      (Right r) -> return $! parseMessageSet r newC
       (Left r) -> do 
         print ("error parsing response: " ++ show r)
-        return ([], c)
-    
+        return ([], newC)
+
   getOffset c = getOffset $ kaConsumer c
   getStream c = getStream $ kaConsumer c
+
   increaseOffsetBy c n = c { kaConsumer = newC }
     where newC = increaseOffsetBy (kaConsumer c) n
+
+withReconnected :: KeepAliveConsumer -> IO KeepAliveConsumer
+withReconnected c = do
+  s <- reconnectSocket $ kaSocket c
+  return $! c { kaSocket = s }
+
+reconnectSocket :: Socket -> IO Socket
+reconnectSocket s = do
+  c <- sIsConnected s
+  if c then
+    return s
+  else
+    connectToKafka
+
+connectToKafka :: IO Socket
+connectToKafka = connectTo "localhost" $ PortNumber 9092
 
 readDataResponse' :: Socket -> IO (Either ErrorCode ByteString)
 readDataResponse' s = do
@@ -44,6 +62,6 @@ readDataResponse' s = do
 
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do
-  s <- connectTo "localhost" $ PortNumber 9092
+  s <- connectToKafka
   return $! KeepAliveConsumer c s
 

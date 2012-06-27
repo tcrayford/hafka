@@ -18,6 +18,8 @@ import Specs.IntegrationHelper
 import Control.Concurrent(forkIO)
 import Control.Monad(when)
 import Data.Serialize.Put
+import Network.Socket(sClose, sIsConnected)
+import Kafka.Network
 
 main :: IO ()
 main = hspec $
@@ -25,6 +27,7 @@ main = hspec $
     integrationTest
     messageProperties
     parsingErrorCode
+    reconnectingToClosedSocket
 
 integrationTest :: Spec
 integrationTest = 
@@ -32,6 +35,7 @@ integrationTest =
     prop "can pop and push a message" produceToConsume
     prop "can produce multiple messages" deliversWhenProducingMultipleMessages
     prop "can consume with a keepalive" consumesWithKeepAlive
+    prop "can reconnect to closed sockets" keepAliveReconectsToClosedSockets
 
 produceToConsume :: Stream -> Message -> Property
 produceToConsume stream message = monadicIO $ do
@@ -64,6 +68,18 @@ consumesWithKeepAlive stream message = monadicIO $ do
 
       run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
 
+keepAliveReconectsToClosedSockets :: Stream -> Message -> Property
+keepAliveReconectsToClosedSockets stream message = monadicIO $ do
+      let (testProducer, testConsumer) = coupledProducerConsumer stream
+      result <- run newEmptyMVar
+
+      c <- run (keepAlive testConsumer)
+      run $ recordMatching c message result
+      run $ sClose (kaSocket c)
+
+      run $ produce testProducer [message]
+
+      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
 
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
@@ -96,6 +112,18 @@ parsingErrorCode = describe "the client" $
 putErrorCode :: Int -> B.ByteString
 putErrorCode code = runPut $ putWord16be $ fromIntegral code
 
+reconnectingToClosedSocket :: Spec
+reconnectingToClosedSocket = describe "" $ do
+  it "reconnects a closed socket" $ do
+    print "asdf"
+    s <- connectTo "localhost" $ PortNumber 9092
+    print "ls"
+    sClose s
+    s2 <- reconnectSocket s
+    c <- sIsConnected s2
+    (c @?= True)
+
+
 instance Arbitrary Partition where
   arbitrary = do
     a <- elements [0..5]
@@ -121,5 +149,4 @@ nonEmptyString :: Gen String
 nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 
 -- higher level api? typeclasses for Produceable, Consumeable?
--- TODO: close the socket, then try to consume
 -- put the basic consumer in Kafka.Consumer.Basic
