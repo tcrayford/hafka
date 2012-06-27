@@ -20,10 +20,10 @@ data KeepAliveConsumer = KeepAliveConsumer {
 instance Consumer KeepAliveConsumer where
   consume c = do
     newC <- withReconnected c
-    s <- takeMVar $ kaSocket c
-    send s $ consumeRequest newC
-    result <- readDataResponse' s
-    putMVar (kaSocket c) s
+    result <- withSocket newC (\s -> do
+        send s $ consumeRequest newC
+        readDataResponse' s
+      )
     case result of
       (Right r) -> return $! parseMessageSet r newC
       (Left r) -> do 
@@ -35,6 +35,13 @@ instance Consumer KeepAliveConsumer where
 
   increaseOffsetBy c n = c { kaConsumer = newC }
     where newC = increaseOffsetBy (kaConsumer c) n
+
+withSocket :: KeepAliveConsumer -> (Socket -> IO a) -> IO a
+withSocket c f = do
+  s <- takeMVar $ kaSocket c
+  r <- f s
+  putMVar (kaSocket c) s
+  return $! r
 
 withReconnected :: KeepAliveConsumer -> IO KeepAliveConsumer
 withReconnected c = do
