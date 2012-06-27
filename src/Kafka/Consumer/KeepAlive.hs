@@ -10,18 +10,20 @@ import System.IO
 import qualified Data.ByteString.Char8 as B
 import Data.ByteString.Char8(ByteString)
 import Data.Serialize.Get
+import Control.Concurrent.MVar
 
 data KeepAliveConsumer = KeepAliveConsumer {
     kaConsumer :: BasicConsumer
-  , kaSocket :: Socket
+  , kaSocket :: MVar Socket
   }
 
 instance Consumer KeepAliveConsumer where
   consume c = do
     newC <- withReconnected c
-    let s = kaSocket c
+    s <- takeMVar $ kaSocket c
     send s $ consumeRequest newC
     result <- readDataResponse' s
+    putMVar (kaSocket c) s
     case result of
       (Right r) -> return $! parseMessageSet r newC
       (Left r) -> do 
@@ -36,8 +38,10 @@ instance Consumer KeepAliveConsumer where
 
 withReconnected :: KeepAliveConsumer -> IO KeepAliveConsumer
 withReconnected c = do
-  s <- reconnectSocket $ kaSocket c
-  return $! c { kaSocket = s }
+  s <- takeMVar $ kaSocket c
+  s' <- reconnectSocket s
+  putMVar (kaSocket c) s'
+  return $! c
 
 reconnectSocket :: Socket -> IO Socket
 reconnectSocket s = do
@@ -62,6 +66,6 @@ readDataResponse' s = do
 
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do
-  s <- connectToKafka
+  s <- connectToKafka >>= newMVar
   return $! KeepAliveConsumer c s
 

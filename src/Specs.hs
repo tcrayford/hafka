@@ -75,7 +75,9 @@ keepAliveReconectsToClosedSockets stream message = monadicIO $ do
 
       c <- run (keepAlive testConsumer)
       run $ recordMatching c message result
-      run $ sClose (kaSocket c)
+      s <- run $ takeMVar (kaSocket c)
+      run $ sClose s
+      run $ putMVar (kaSocket c) s
 
       run $ produce testProducer [message]
 
