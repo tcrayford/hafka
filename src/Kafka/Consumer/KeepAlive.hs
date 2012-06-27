@@ -24,17 +24,21 @@ instance Consumer KeepAliveConsumer where
         send s $ consumeRequest newC
         readDataResponse' s
       )
-    case result of
-      (Right r) -> return $! parseMessageSet r newC
-      (Left r) -> do 
-        print ("error parsing response: " ++ show r)
-        return ([], newC)
+    handleResult result newC parseMessageSet
 
   getOffset c = getOffset $ kaConsumer c
   getStream c = getStream $ kaConsumer c
 
   increaseOffsetBy c n = c { kaConsumer = newC }
     where newC = increaseOffsetBy (kaConsumer c) n
+
+handleResult :: (Either ErrorCode ByteString) -> KeepAliveConsumer -> (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer)) -> IO ([Message], KeepAliveConsumer)
+handleResult result newC f = do
+  case result of
+    (Right r) -> return $! f r newC
+    (Left r) -> do
+      print ("error parsing response: " ++ show r)
+      return ([], newC)
 
 withSocket :: KeepAliveConsumer -> (Socket -> IO a) -> IO a
 withSocket c f = do
