@@ -6,8 +6,8 @@ import Control.Concurrent.MVar
 import System.Timeout
 import Control.Concurrent(killThread, myThreadId)
 
-coupledProducerConsumer :: Stream -> (ProducerSettings, Consumer)
-coupledProducerConsumer s = (ProducerSettings s, Consumer s $ Offset 0)
+coupledProducerConsumer :: Stream -> (ProducerSettings, BasicConsumer)
+coupledProducerConsumer s = (ProducerSettings s, BasicConsumer s $ Offset 0)
 
 waitFor :: MVar a -> String -> IO ()
 waitFor result message = do

@@ -11,28 +11,46 @@ import Data.Serialize.Put
 import Data.Serialize.Get
 import Control.Concurrent(threadDelay)
 
-data Consumer = Consumer {
+data BasicConsumer = BasicConsumer {
     cStream :: Stream
   , cOffset :: Offset
   }
 
-consumeLoop :: Consumer -> (Message -> IO b) -> IO ()
+class Consumer c where
+  consume :: c -> IO (Either ErrorCode (ByteString, c))
+  getOffset :: c -> Offset
+  getStream :: c -> Stream
+  increaseOffsetBy :: c -> Int -> c
+
+instance Consumer BasicConsumer where
+  consume a = do
+    result <- getFetchData a
+    case result of
+      (Right r) -> return $! Right (r, a)
+      (Left r) -> do 
+        return $! Left $ r
+  getOffset (BasicConsumer _ o) = o
+  getStream (BasicConsumer s _) = s
+  increaseOffsetBy settings increment = settings { cOffset = newOffset }
+    where newOffset = Offset (current + increment)
+          (Offset current) = cOffset settings
+
+consume' c = do
+  result <- consume c
+  case result of
+    (Right (r, c')) -> return $! parseMessageSet r c'
+    (Left r) -> do 
+      print ("error parsing response: " ++ show r)
+      return ([], c)
+
+consumeLoop :: (Consumer c) => c -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
-  (messages, newSettings) <- consume a
+  (messages, newSettings) <- consume' a
   mapM_ f messages
   threadDelay 2000
   consumeLoop newSettings f
 
-consume :: Consumer -> IO ([Message], Consumer)
-consume a = do
-  result <- getFetchData a
-  case result of
-    (Right r) -> return $! parseMessageSet r a
-    (Left r) -> do 
-      print ("error parsing response: " ++ show r)
-      return ([], a)
-
-getFetchData :: Consumer -> IO (Either ErrorCode ByteString)
+getFetchData :: (Consumer c) => c -> IO (Either ErrorCode ByteString)
 getFetchData a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
@@ -41,16 +59,23 @@ getFetchData a = do
   hClose h
   return res
 
-consumeRequest :: Consumer -> ByteString
+consumeRequest :: (Consumer c) => c -> ByteString
 consumeRequest a = runPut $ do
   encodeRequestSize a
   encodeRequest a
 
-encodeRequestSize :: Consumer -> Put
-encodeRequestSize (Consumer (Stream (Topic topic) _) _) = putWord32be $ fromIntegral requestSize
+encodeRequestSize :: (Consumer c) => c -> Put
+encodeRequestSize c = putWord32be $ fromIntegral requestSize
   where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
+        (Topic topic) = getTopic c
 
-encodeRequest :: Consumer -> Put
+getTopic :: (Consumer c) => c -> Topic
+getTopic c = sTopic $ getStream c
+
+getPartition :: (Consumer c) => c -> Partition
+getPartition c = sPartition $ getStream c
+
+encodeRequest :: (Consumer c) => c -> Put
 encodeRequest a = do
   putRequestType
   putTopic a
@@ -62,16 +87,19 @@ putRequestType :: Put
 putRequestType = putWord16be $ fromIntegral raw
   where (RequestType raw) = fetchRequestType
 
-putTopic :: Consumer -> Put
-putTopic (Consumer (Stream (Topic t) _) _)  = do
+putTopic :: (Consumer c) => c -> Put
+putTopic c  = do
   putWord16be . fromIntegral $ B.length t
   putByteString t
+  where (Topic t) = getTopic c
 
-putPartition :: Consumer -> Put
-putPartition (Consumer (Stream _ (Partition p)) _) = putWord32be $ fromIntegral p
+putPartition :: (Consumer c) => c -> Put
+putPartition c = putWord32be $ fromIntegral p
+  where (Partition p) = getPartition c
 
-putOffset :: Consumer -> Put
-putOffset (Consumer _ (Offset offset)) = putWord64be $ fromIntegral offset
+putOffset :: (Consumer c) => c -> Put
+putOffset c = putWord64be $ fromIntegral offset
+  where (Offset offset) = getOffset c
 
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB
@@ -91,11 +119,11 @@ getDataLength = do
   raw <- getWord32be
   return $ fromIntegral raw
 
-parseMessageSet :: ByteString -> Consumer -> ([Message], Consumer)
+parseMessageSet :: (Consumer c) => ByteString -> c -> ([Message], c)
 parseMessageSet a = parseMessageSet' a [] 0 startingLength
   where startingLength = B.length a - 4
 
-parseMessageSet' :: ByteString -> [Message] -> Int -> Int -> Consumer -> ([Message], Consumer)
+parseMessageSet' :: (Consumer c) => ByteString -> [Message] -> Int -> Int -> c -> ([Message], c)
 parseMessageSet' a messages processed totalLength settings
   | processed <= totalLength = parseMessageSet' a newMessages newProcessed totalLength newSettings
   | otherwise = (messages, settings)
@@ -104,11 +132,6 @@ parseMessageSet' a messages processed totalLength settings
         newSettings = increaseOffsetBy settings processed
         newMessages = (messages ++ [parsed])
         newProcessed = processed + 4 + messageSize
-
-increaseOffsetBy :: Consumer -> Int -> Consumer
-increaseOffsetBy settings increment = settings { cOffset = newOffset }
-  where newOffset = Offset (current + increment)
-        (Offset current) = cOffset settings
 
 parseMessageSize :: Int -> ByteString -> Int
 parseMessageSize processed raw = fromIntegral $ forceEither raw $ runGet' raw $ do

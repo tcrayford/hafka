@@ -4,7 +4,10 @@ import Data.ByteString.Char8(ByteString)
 newtype Topic = Topic ByteString deriving (Show, Eq)
 newtype Partition = Partition Int deriving (Show, Eq)
 newtype Offset = Offset Int deriving (Show, Eq)
-data Stream = Stream Topic Partition deriving (Show, Eq)
+data Stream = Stream {
+    sTopic :: Topic
+  , sPartition :: Partition 
+  } deriving (Show, Eq)
 newtype Message = Message ByteString deriving (Show, Eq)
 
 newtype RequestType = RequestType Int

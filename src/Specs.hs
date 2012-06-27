@@ -52,7 +52,7 @@ deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
 
       run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered")
 
-recordMatching :: Consumer -> Message -> MVar Message -> IO ()
+recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
   _ <- forkIO $ consumeLoop c go
   return ()
