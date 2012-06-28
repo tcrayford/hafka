@@ -20,6 +20,7 @@ import Data.Serialize.Put
 import Network.Socket(sClose, sIsConnected)
 import Kafka.Network
 import Control.Monad
+import System.Timeout
 
 main :: IO ()
 main = hspec $
@@ -46,7 +47,7 @@ produceToConsume stream message = monadicIO $ do
       run $ produce testProducer [message]
       run $ recordMatching testConsumer message result
 
-      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
+      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (return ())
 
 deliversWhenProducingMultipleMessages :: Stream -> Message -> Message -> Property
 deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
@@ -56,7 +57,7 @@ deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
       run $ produce testProducer [m1, m2]
       run $ recordMatching testConsumer m2 result
 
-      run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered")
+      run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered") (return ())
 
 consumesWithKeepAlive :: Stream -> Message -> Property
 consumesWithKeepAlive stream message = monadicIO $ do
@@ -67,7 +68,7 @@ consumesWithKeepAlive stream message = monadicIO $ do
       c <- run (keepAlive testConsumer)
       run $ recordMatching c message result
 
-      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
+      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (killSocket c)
 
 keepAliveReconectsToClosedSockets :: Stream -> Message -> Property
 keepAliveReconectsToClosedSockets stream message = monadicIO $ do
@@ -80,13 +81,16 @@ keepAliveReconectsToClosedSockets stream message = monadicIO $ do
 
       run $ produce testProducer [message]
 
-      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
+      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (killSocket c)
 
 killSocket :: KeepAliveConsumer -> IO ()
 killSocket c = do
-  s <- takeMVar (kaSocket c)
-  sClose s
-  putMVar (kaSocket c) s
+  r <- timeout 100000 $ takeMVar (kaSocket c)
+  case r of
+    (Just s) -> do
+      sClose s
+      putMVar (kaSocket c) s
+    Nothing -> error "timed out whilst trying to kill the socket"
 
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
