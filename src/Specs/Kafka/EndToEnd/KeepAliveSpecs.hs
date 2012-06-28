@@ -20,7 +20,7 @@ keepAliveReconectsToClosedSockets n stream message = monadicIO $ do
       c <- run (keepAlive testConsumer)
 
       run $ recordMatching c message result
-      run $ killSocketAfter n c
+      run $ killSocketAfter (abs n) c
       run $ produce testProducer [message]
 
       run $ waitFor result message (killSocket c)
