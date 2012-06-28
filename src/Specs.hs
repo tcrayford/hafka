@@ -24,6 +24,7 @@ import Kafka.Network
 import Control.Monad
 import System.Timeout
 import Specs.Kafka.Arbitrary
+import Specs.Kafka.EndToEnd.KeepAliveSpecs
 
 main :: IO ()
 main = hspec $
@@ -73,53 +74,6 @@ consumesWithKeepAlive stream message = monadicIO $ do
       run $ recordMatching c message result
 
       run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (killSocket c)
-
-keepAliveReconectsToClosedSockets :: Stream -> Message -> Property
-keepAliveReconectsToClosedSockets stream message = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
-
-      c <- run (keepAlive testConsumer)
-      run $ recordMatching c message result
-      run $ killSocket c
-
-      run $ produce testProducer [message]
-
-      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (killSocket c)
-
-keepAliveConsumesMultipleMessages :: Stream -> Message -> Message -> Property
-keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
-
-      c <- run (keepAlive testConsumer)
-      run $ produce testProducer [m1, m2]
-      run $ recordMatching c m2 result
-
-      run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered") (return ())
-
-killSocket :: KeepAliveConsumer -> IO ()
-killSocket c = do
-  r <- timeout 100000 $ takeMVar (kaSocket c)
-  case r of
-    (Just s) -> do
-      sClose s
-      putMVar (kaSocket c) s
-    Nothing -> error "timed out whilst trying to kill the socket"
-
-
-recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
-recordMatching c original r = do
-  _ <- forkIO $ consumeLoop c go
-  return ()
-
-  where
-    go :: Message -> IO ()
-    go message = when (original == message) $ finish message
-    finish :: Message -> IO ()
-    finish message = do
-              putMVar r message
-              killCurrent
 
 reconnectingToClosedSocket :: Spec
 reconnectingToClosedSocket = describe "reconnectSocket" $
