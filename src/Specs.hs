@@ -15,6 +15,7 @@ import Control.Concurrent.MVar
 import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck.Monadic
 import Specs.IntegrationHelper
+import Specs.Kafka.KeepAlive
 import Control.Concurrent(forkIO)
 import Data.Serialize.Put
 import Network.Socket(sClose, sIsConnected)
@@ -143,23 +144,6 @@ reconnectingToClosedSocket = describe "reconnectSocket" $
     s2 <- reconnectSocket s
     c <- sIsConnected s2
     c @?= True
-
-parseConsumptionTest :: Spec
-parseConsumptionTest = describe "parseConsumption" $ do
-  let parser bs c = ([Message bs], c)
-  it "finds no messages when there is a parse error" $ do
-    c <- aKeepAliveConsumer
-    (r, a) <- parseConsumption (Left Unknown) c parser
-    r @?= []
-
-  it "parses the found messages if parse succeeds" $ do
-    c <- aKeepAliveConsumer
-    (r, a) <- parseConsumption (Right "an message") c parser
-    r @?= [Message "an message"]
-
-aKeepAliveConsumer = do
-  let c = BasicConsumer (Stream (Topic "test") (Partition 0)) (Offset 0)
-  keepAlive c
 
 instance Arbitrary Partition where
   arbitrary = do
