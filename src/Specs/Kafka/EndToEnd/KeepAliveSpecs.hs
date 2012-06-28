@@ -29,8 +29,8 @@ keepAliveConsumesMultipleMessages :: Stream -> Message -> Message -> Property
 keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
       let (testProducer, testConsumer) = coupledProducerConsumer stream
       result <- run newEmptyMVar
-
       c <- run (keepAlive testConsumer)
+
       run $ produce testProducer [m1, m2]
       run $ recordMatching c m2 result
 
