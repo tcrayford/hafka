@@ -4,7 +4,7 @@ import Kafka.Consumer
 import Kafka.Types
 import Control.Concurrent.MVar
 import System.Timeout
-import Control.Concurrent(killThread, myThreadId)
+import Control.Concurrent(forkIO, killThread, myThreadId)
 
 coupledProducerConsumer :: Stream -> (ProducerSettings, BasicConsumer)
 coupledProducerConsumer s = (ProducerSettings s, BasicConsumer s $ Offset 0)
@@ -19,4 +19,6 @@ waitFor result message finalizer = do
 
 killCurrent :: IO ()
 killCurrent = myThreadId >>= killThread
+
+forkIO' a = forkIO a >> return ()
 

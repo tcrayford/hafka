@@ -39,8 +39,7 @@ keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
-  _ <- forkIO $ consumeLoop c go
-  return ()
+  forkIO' $ consumeLoop c go
 
   where
     go :: Message -> IO ()
