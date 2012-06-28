@@ -25,10 +25,10 @@ main = hspec $
     reconnectingToClosedSocket
     parseConsumptionTest
     messageProperties
-    integrationTest
+    integrationTests
 
-integrationTest :: Spec
-integrationTest = 
+integrationTests :: Spec
+integrationTests =
   describe "the integrated producer -> consumer loop" $ do
     prop "can pop and push a message" produceToConsume
     prop "can produce multiple messages" deliversWhenProducingMultipleMessages
