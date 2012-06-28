@@ -11,6 +11,8 @@ import qualified Data.ByteString.Char8 as B
 import Data.ByteString.Char8(ByteString)
 import Data.Serialize.Get
 import Control.Concurrent.MVar
+import Control.Monad(liftM)
+import Debug.Trace
 
 data KeepAliveConsumer = KeepAliveConsumer {
     kaConsumer :: BasicConsumer
@@ -67,13 +69,18 @@ connectToKafka = connectTo "localhost" $ PortNumber 9092
 
 readDataResponse' :: Socket -> IO (Either ErrorCode ByteString)
 readDataResponse' s = do
-  d <- recv s 4096
+  d <- recvFrom' s 4
   let (Right dataLength) = runGet getDataLength d
-      rawResponse = B.take dataLength (B.drop 4 d)
-      x = parseErrorCode rawResponse
+  rawResponse <- recvFrom' s dataLength
+  let x = parseErrorCode rawResponse
   case x of
     Success -> return $! Right $ B.drop 2 rawResponse
     e -> return $! Left e
+
+recvFrom' :: Socket -> Int -> IO ByteString
+recvFrom' s n = do 
+  (d, _) <- recvFrom s n
+  return d
 
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do
