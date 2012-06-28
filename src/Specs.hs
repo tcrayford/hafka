@@ -26,7 +26,7 @@ main = hspec $
   describe "hafka" $ do
     parsingErrorCode
     reconnectingToClosedSocket
-    handleResultTest
+    parseConsumptionTest
     messageProperties
     integrationTest
 
@@ -124,17 +124,17 @@ reconnectingToClosedSocket = describe "reconnectSocket" $ do
     c <- sIsConnected s2
     (c @?= True)
 
-handleResultTest :: Spec
-handleResultTest = describe "handleResult" $ do
+parseConsumptionTest :: Spec
+parseConsumptionTest = describe "parseConsumption" $ do
   let parser bs c = ([Message bs], c)
   it "finds no messages when there is a parse error" $ do
     c <- aKeepAliveConsumer
-    (r, a) <- handleResult (Left Unknown) c parser
+    (r, a) <- parseConsumption (Left Unknown) c parser
     r @?= []
 
   it "parses the found messages if parse succeeds" $ do
     c <- aKeepAliveConsumer
-    (r, a) <- handleResult (Right "an message") c parser
+    (r, a) <- parseConsumption (Right "an message") c parser
     r @?= [Message "an message"]
 
 aKeepAliveConsumer = do

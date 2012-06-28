@@ -24,7 +24,7 @@ instance Consumer KeepAliveConsumer where
         send s $ consumeRequest newC
         readDataResponse' s
       )
-    handleResult result newC parseMessageSet
+    parseConsumption result newC parseMessageSet
 
   getOffset c = getOffset $ kaConsumer c
   getStream c = getStream $ kaConsumer c
@@ -32,8 +32,8 @@ instance Consumer KeepAliveConsumer where
   increaseOffsetBy c n = c { kaConsumer = newC }
     where newC = increaseOffsetBy (kaConsumer c) n
 
-handleResult :: (Either ErrorCode ByteString) -> KeepAliveConsumer -> (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer)) -> IO ([Message], KeepAliveConsumer)
-handleResult result newC f = do
+parseConsumption :: (Either ErrorCode ByteString) -> KeepAliveConsumer -> (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer)) -> IO ([Message], KeepAliveConsumer)
+parseConsumption result newC f = do
   case result of
     (Right r) -> return $! f r newC
     (Left r) -> do
