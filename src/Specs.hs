@@ -38,6 +38,7 @@ integrationTest =
     prop "can produce multiple messages" deliversWhenProducingMultipleMessages
     prop "can consume with a keepalive" consumesWithKeepAlive
     prop "can reconnect to closed sockets" keepAliveReconectsToClosedSockets
+    prop "keepAlive consumes multiple messages" keepAliveConsumesMultipleMessages 
 
 produceToConsume :: Stream -> Message -> Property
 produceToConsume stream message = monadicIO $ do
@@ -82,6 +83,17 @@ keepAliveReconectsToClosedSockets stream message = monadicIO $ do
       run $ produce testProducer [message]
 
       run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (killSocket c)
+
+keepAliveConsumesMultipleMessages :: Stream -> Message -> Message -> Property
+keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
+      let (testProducer, testConsumer) = coupledProducerConsumer stream
+      result <- run newEmptyMVar
+
+      c <- run (keepAlive testConsumer)
+      run $ produce testProducer [m1, m2]
+      run $ recordMatching c m2 result
+
+      run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered") (return ())
 
 killSocket :: KeepAliveConsumer -> IO ()
 killSocket c = do
