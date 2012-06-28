@@ -16,7 +16,6 @@ import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck.Monadic
 import Specs.IntegrationHelper
 import Control.Concurrent(forkIO)
-import Control.Monad(when)
 import Data.Serialize.Put
 import Network.Socket(sClose, sIsConnected)
 import Kafka.Network
@@ -116,13 +115,13 @@ putErrorCode :: Int -> B.ByteString
 putErrorCode code = runPut $ putWord16be $ fromIntegral code
 
 reconnectingToClosedSocket :: Spec
-reconnectingToClosedSocket = describe "reconnectSocket" $ do
+reconnectingToClosedSocket = describe "reconnectSocket" $
   it "reconnects a closed socket" $ do
     s <- connectTo "localhost" $ PortNumber 9092
     sClose s
     s2 <- reconnectSocket s
     c <- sIsConnected s2
-    (c @?= True)
+    c @?= True
 
 parseConsumptionTest :: Spec
 parseConsumptionTest = describe "parseConsumption" $ do

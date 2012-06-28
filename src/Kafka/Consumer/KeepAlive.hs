@@ -34,16 +34,15 @@ instance Consumer KeepAliveConsumer where
   increaseOffsetBy c n = c { kaConsumer = newC }
     where newC = increaseOffsetBy (kaConsumer c) n
 
-parseConsumption :: (Either ErrorCode ByteString) -> KeepAliveConsumer -> (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer)) -> IO ([Message], KeepAliveConsumer)
-parseConsumption result newC f = do
-  case result of
+parseConsumption :: Either ErrorCode ByteString -> KeepAliveConsumer -> (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer)) -> IO ([Message], KeepAliveConsumer)
+parseConsumption result newC f = case result of
     (Right r) -> return $! f r newC
     (Left r) -> do
       print ("error parsing response: " ++ show r)
       return ([], newC)
 
 withSocket :: KeepAliveConsumer -> (Socket -> IO a) -> IO a
-withSocket c f = withMVar (kaSocket c) f
+withSocket c = withMVar (kaSocket c)
 
 withReconnected :: KeepAliveConsumer -> IO KeepAliveConsumer
 withReconnected c = do

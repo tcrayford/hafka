@@ -12,6 +12,7 @@ import qualified Control.Exception as Exception
 
 connectTo :: HostName -> N.PortID -> IO Socket
 connectTo hostname (N.PortNumber port) = connect' hostname (show port)
+connectTo hostname (N.Service serv) = connect' hostname serv
 
 connect' :: HostName -> ServiceName -> IO Socket
 connect' host serv = do
@@ -25,7 +26,7 @@ connect' host serv = do
   tryToConnect addr =
     Exception.bracketOnError
         (socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr))
-        (sClose)  -- only done if there's an error
+        sClose  -- only done if there's an error
         (\sock -> do
           connect sock (addrAddress addr)
           return sock
