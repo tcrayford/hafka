@@ -44,7 +44,7 @@ produceToConsume stream message = monadicIO $ do
       run $ produce testProducer [message]
       run $ recordMatching testConsumer message result
 
-      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (return ())
+      run $ waitFor result message (return ())
 
 deliversWhenProducingMultipleMessages :: Stream -> Message -> Message -> Property
 deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
@@ -54,7 +54,7 @@ deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
       run $ produce testProducer [m1, m2]
       run $ recordMatching testConsumer m2 result
 
-      run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered") (return ())
+      run $ waitFor result m2 (return ())
 
 consumesWithKeepAlive :: Stream -> Message -> Property
 consumesWithKeepAlive stream message = monadicIO $ do
@@ -65,7 +65,7 @@ consumesWithKeepAlive stream message = monadicIO $ do
       c <- run (keepAlive testConsumer)
       run $ recordMatching c message result
 
-      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (killSocket c)
+      run $ waitFor result message (killSocket c)
 
 reconnectingToClosedSocket :: Spec
 reconnectingToClosedSocket = describe "reconnectSocket" $

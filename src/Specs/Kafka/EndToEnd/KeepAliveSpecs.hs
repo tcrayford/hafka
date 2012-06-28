@@ -24,7 +24,7 @@ keepAliveReconectsToClosedSockets stream message = monadicIO $ do
 
       run $ produce testProducer [message]
 
-      run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered") (killSocket c)
+      run $ waitFor result message (killSocket c)
 
 keepAliveConsumesMultipleMessages :: Stream -> Message -> Message -> Property
 keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
@@ -35,7 +35,7 @@ keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
       run $ produce testProducer [m1, m2]
       run $ recordMatching c m2 result
 
-      run $ waitFor result ("timed out waiting for " ++ show m2 ++ " to be delivered") (return ())
+      run $ waitFor result m2 (return ())
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
