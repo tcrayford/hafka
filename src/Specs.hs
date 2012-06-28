@@ -1,30 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Specs where
-import Test.Hspec.Monadic
-import Test.Hspec.HUnit()
-import Test.HUnit
-import Test.Hspec.QuickCheck
-import Test.QuickCheck
-import Kafka.Producer
-import Kafka.Consumer
-import Kafka.Consumer.KeepAlive
-import Kafka.Types
-import Kafka.Response
 import Control.Concurrent.MVar
-import qualified Data.ByteString.Char8 as B
-import Test.QuickCheck.Monadic
-import Specs.IntegrationHelper
-import Specs.Kafka.KeepAlive
-import Specs.Kafka.ParsingSpecs
-import Control.Concurrent(forkIO)
-import Data.Serialize.Put
-import Network.Socket(sClose, sIsConnected)
+import Kafka.Consumer.KeepAlive
 import Kafka.Network
-import Control.Monad
-import System.Timeout
+import Kafka.Producer
+import Kafka.Types
+import Network.Socket(sClose, sIsConnected)
+import Specs.IntegrationHelper
 import Specs.Kafka.Arbitrary
 import Specs.Kafka.EndToEnd.KeepAliveSpecs
+import Specs.Kafka.KeepAlive
+import Specs.Kafka.ParsingSpecs
+import Test.HUnit
+import Test.Hspec.Monadic
+import Test.Hspec.QuickCheck
+import Test.QuickCheck
+import Test.QuickCheck.Monadic
 
 main :: IO ()
 main = hspec $
