@@ -1,0 +1,1518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+            <title>Writing a Driver for Kafka - Apache Kafka - Apache Software Foundation</title>
+    
+        
+
+                        
+    
+                        
+    
+    
+            <!-- Deprecated since 3.4. To be removed in a future version of Confluence; use AJS.Confluence.getContextPath() -->
+<meta id="confluence-context-path" name="confluence-context-path" content="/confluence">
+<meta name="ajs-context-path" content="/confluence">
+<meta name="ajs-build-number" content="2042">
+<meta id="atlassian-token" name="atlassian-token" content="015c45c1a14009fe452753938034156bf1f49b1b">
+<meta id="confluence-space-key" name="confluence-space-key" content="KAFKA">
+<meta name="ajs-remote-user" content="">
+<meta name="ajs-static-resource-url-prefix" content="/confluence/s/2042/9/_">
+
+<script type="text/javascript">
+    // Deprecated global variables. To be removed in a future version of Confluence.
+    var contextPath = '/confluence';
+</script>
+
+    
+
+<!-- include system css resources -->
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1/_/download/superbatch/css/batch.css" media="all">
+<!--[if IE]>
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1/_/download/superbatch/css/batch.css?ieonly=true" media="all">
+<![endif]-->
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1/_/download/superbatch/css/batch.css?media=print" media="print">
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1.0/_/download/batch/confluence.web.resources:view-comment/confluence.web.resources:view-comment.css" media="all">
+<!--[if IE]>
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1.0/_/download/batch/confluence.web.resources:view-comment/confluence.web.resources:view-comment.css?ieonly=true" media="all">
+<![endif]-->
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1.12.4/_/download/batch/confluence.macros.advanced:fancy-box/confluence.macros.advanced:fancy-box.css" media="all">
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1.0.8/_/download/batch/com.atlassian.confluence.plugins.drag-and-drop:support/com.atlassian.confluence.plugins.drag-and-drop:support.css" media="all">
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1.0/_/download/resources/confluence.web.resources:aui-forms/confluence-forms.css" media="all">
+<!--[if IE]>
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/1.0/_/download/batch/confluence.web.resources:aui-forms/confluence.web.resources:aui-forms.css?ieonly=true" media="all">
+<![endif]-->
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/0.7/_/download/batch/com.atlassian.plugins.shortcuts.atlassian-shortcuts-module:shortcuts/com.atlassian.plugins.shortcuts.atlassian-shortcuts-module:shortcuts.css" media="all">
+<link type="text/css" rel="stylesheet" href="/confluence/s/2042/9/3.4.9/_/download/batch/com.atlassian.confluence.keyboardshortcuts:confluence-keyboard-shortcuts/com.atlassian.confluence.keyboardshortcuts:confluence-keyboard-shortcuts.css" media="all">
+
+<!-- end system css resources -->
+
+    <link rel="stylesheet" href="/confluence/s/2042/9/3/_/styles/combined.css?spaceKey=KAFKA" type="text/css">
+
+    <meta name="confluence-request-time" content="1340882859702">
+
+<meta name="loggedInUsername" content="">
+            <meta name="ajs-keyboardshortcut-hash" content="5bdbf7179cfb8f7c5d5a3c83264b1ee8">
+    <!-- Deprecated since 3.4. To be removed in a future version of Confluence; use atl.header -->
+            <meta name="ajs-use-keyboard-shortcuts" content="true">
+    
+    <link rel="shortcut icon" href="/confluence/favicon.ico">
+    <link rel="icon" type="image/png" href="/confluence/s/2042/9/_/images/logo/confluence_16.png">
+
+<link rel="search" type="application/opensearchdescription+xml" href="/confluence/opensearch/osd.action" title="Apache Software Foundation"/>
+
+        <!-- include system javascript resources -->
+                        
+    
+    <script type="text/javascript" src="/confluence/s/2042/9/1/_/download/superbatch/js/batch.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/1.12.4/_/download/batch/confluence.macros.advanced:fancy-box/confluence.macros.advanced:fancy-box.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/1.12.4/_/download/batch/confluence.macros.advanced:thumbnail-images/confluence.macros.advanced:thumbnail-images.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/1.0.8/_/download/batch/com.atlassian.confluence.plugins.drag-and-drop:support/com.atlassian.confluence.plugins.drag-and-drop:support.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/1.0.8/_/download/batch/com.atlassian.confluence.plugins.drag-and-drop:drag-and-drop-for-view-content/com.atlassian.confluence.plugins.drag-and-drop:drag-and-drop-for-view-content.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/1.6/_/download/batch/com.atlassian.confluence.plugins.doctheme:splitter/com.atlassian.confluence.plugins.doctheme:splitter.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/0.7/_/download/batch/com.atlassian.plugins.shortcuts.atlassian-shortcuts-module:shortcuts/com.atlassian.plugins.shortcuts.atlassian-shortcuts-module:shortcuts.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/3.4.9/_/download/batch/com.atlassian.confluence.keyboardshortcuts:confluence-keyboard-shortcuts/com.atlassian.confluence.keyboardshortcuts:confluence-keyboard-shortcuts.js" ></script>
+<script type="text/javascript" src="/confluence/s/2042/9/1.0/_/download/batch/legacy.confluence.web.resources:prototype/legacy.confluence.web.resources:prototype.js" ></script>
+
+    
+    <!-- end system javascript resources -->
+
+    
+
+    
+    <link rel="canonical" href="https://cwiki.apache.org/confluence/display/KAFKA/Writing+a+Driver+for+Kafka">
+    <link rel="shortlink" href="https://cwiki.apache.org/confluence/x/YLCoAQ">
+    <meta name="wikilink" content="[KAFKA:Writing a Driver for Kafka]">
+
+</head>
+    
+<body             onload="placeFocus()"
+     id="com-atlassian-confluence" class="theme-default ">
+<ul id="assistive-skip-links" class="assistive">
+    <li><a href="#title-heading">Skip to content</a></li>
+    <li><a href="#breadcrumbs">Skip to breadcrumbs</a></li>
+    <li><a href="#header-menu-bar">Skip to header menu</a></li>
+    <li><a href="#navigation">Skip to action menu</a></li>
+    <li><a href="#quick-search-query">Skip to quick search</a></li>
+</ul>
+<div id="page">
+<div id="full-height-container">
+<style type="text/css">
+#preview #previewArea iframe {
+
+   overflow: visible;
+}
+</style>
+
+
+<fieldset class="hidden parameters">
+    <input type="hidden" id="statusDialogHeading" value="What are you working on?">
+    <input type="hidden" id="statusDialogAccessibilityLabel" value="Enter your status (140 character limit)">
+    <input type="hidden" id="statusDialogLatestLabel" value="Last update:">
+    <input type="hidden" id="statusDialogUpdateButtonLabel" value="Update">
+    <input type="hidden" id="statusDialogCancelButtonLabel" value="Cancel">
+</fieldset>
+
+<fieldset class="hidden parameters">
+    <input type="hidden" id="globalSettingsAttachmentMaxSize" value="20971520">
+    <input type="hidden" id="userLocale" value="en_GB">
+    <input type="hidden" id="staticResourceUrlPrefix" value="/confluence/s/2042/9/_">
+    <input type="hidden" id="contextPath" value="/confluence">
+</fieldset>
+
+    
+<div id="header" class="">
+        <form id="quick-search" class="quick-search" method="get" action="/confluence/dosearchsite.action">
+        <fieldset>
+            <legend>Quick Search</legend>
+            <input class="quick-search-query" id="quick-search-query" type="text" accessKey="q" autocomplete="off" name="queryString" size="25" />
+            <input class="quick-search-submit" id="quick-search-submit" type="submit" value="Search" />
+            <div class="aui-dd-parent quick-nav-drop-down"><!-- Quick nav appears here --></div>
+        </fieldset>
+        <fieldset class="hidden parameters">
+            <input type="hidden" id="quickNavEnabled" value="true" />
+                    </fieldset>
+    </form>
+    <ul id="header-menu-bar" class="ajs-menu-bar">
+                    
+        
+            <li class="normal ajs-menu-item">
+        <a id="browse-menu-link" class="browse trigger ajs-menu-title" href="#"><span><span>Browse</span></span></a>         <div class="assistive ajs-drop-down">
+                        <ul  id="browse-menu-link-leading"                 class="section-leading first">
+                                        <li>
+    
+        
+    
+    <a  id="space-pages-link" href="/confluence/pages/listpages.action?key=KAFKA"  class=""   title="Browse pages in the Apache Kafka space">
+                   <span>Pages</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="space-blogposts-link" href="/confluence/pages/viewrecentblogposts.action?key=KAFKA"  class=""   title="Browse blogs in the Apache Kafka space">
+                   <span>Blog</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="space-labels-link" href="/confluence/labels/listlabels-heatmap.action?key=KAFKA"  class=""   title="Browse labels in the Apache Kafka space">
+                   <span>Labels</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="space-attachments-link" href="/confluence/spaces/listattachmentsforspace.action?key=KAFKA"  class=""   title="Browse attachments in the Apache Kafka space">
+                   <span>Attachments</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  href="/confluence/spaces/space-bookmarks.action?spaceKey=KAFKA"  class=""   title="Browse bookmarks in the Apache Kafka space">
+                   <span>Bookmarks</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="space-mail-link" href="/confluence/spaces/viewmailarchive.action?key=KAFKA"  class=""   title="Browse mail in the Apache Kafka space">
+                   <span>Mail</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="space-advanced-link" href="/confluence/spaces/viewspacesummary.action?key=KAFKA"  class=""   title="Browse additional space functions in the Apache Kafka space">
+                   <span>Advanced</span></a>        </li>
+                            </ul>
+                        <ul  id="browse-menu-link-global"                 class="section-global">
+                                        <li>
+    
+        
+    
+    <a  id="keyboard-shortcuts-link" href="/confluence"  class=""   title="View available keyboard shortcuts">
+                   <span>Keyboard Shortcuts</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="gadget-directory-link" href="/confluence"  class="user-item administration-link"   title="Browse gadgets provided by Confluence">
+                   <span>Confluence Gadgets</span></a>        </li>
+                            </ul>
+                    </div>
+    </li>
+        
+                                                         <li class="ajs-menu-item normal">
+        
+        
+    
+    <a  id="login-link" href="/confluence/login.action?os_destination=%2Fdisplay%2FKAFKA%2FWriting%2Ba%2BDriver%2Bfor%2BKafka"  class="user-item login-link"   title="">
+                   <span>Log In</span></a>        </li>
+                            <li class="ajs-menu-item normal">
+    
+        
+    
+    <a  id="signup-link" href="/confluence/signup.action"  class="user-item signup-link"   title="">
+                   <span>Sign Up</span></a>        </li>
+                            </ul>
+    
+    
+    <ol id="breadcrumbs">
+                    
+                        
+        <li class="first" >
+                                    <span><a href="/confluence/dashboard.action" title="Go to Dashboard">Dashboard</a></span>
+                </li>
+                    
+                
+        <li>
+                                    <span><a href="/confluence/display/KAFKA">Apache Kafka</a></span>
+                </li>
+                    
+                
+        <li>
+                                    <span><a href="/confluence/display/KAFKA/Index">Index</a></span>
+                </li>
+                    
+                
+        <li>
+                                    <span>Writing a Driver for Kafka</span>
+                </li>
+        </ol>
+
+</div><!-- \#header -->
+
+<div id="main" >
+    
+    
+    <div id="navigation" class="content-navigation view">
+        <fieldset class="hidden parameters">
+            <input type="hidden" id="pageId" value="27832416">
+        </fieldset>
+        <ul class="ajs-menu-bar">
+                                
+            <li class="normal ajs-menu-item">
+        <a id="add-menu-link" class="add trigger ajs-menu-title" href="#"><span><span>Add</span></span></a>         <div class="assistive ajs-drop-down">
+                        <ul  id="add-menu-link-page"                 class="section-page first">
+                                        <li>
+    
+        
+    
+    <a  id="add-comment-menu-link" href="/confluence/display/KAFKA/Writing+a+Driver+for+Kafka?showComments=true&amp;showCommentArea=true#addcomment"  class="add-comment"   title="Add a Comment">
+                   <span>Comment</span></a>        </li>
+                            </ul>
+                    </div>
+    </li>
+                    
+            <li class="normal ajs-menu-item">
+        <a id="action-menu-link" class="action trigger ajs-menu-title" href="#"><span><span>Tools</span></span></a>         <div class="assistive ajs-drop-down">
+                        <ul  id="action-menu-link-primary"                 class="section-primary first">
+                                        <li>
+    
+        
+    
+    <a  id="view-attachments-link" href="/confluence/pages/viewpageattachments.action?pageId=27832416"  class="action-view-attachments"  accessKey="a"  title="View Attachments">
+                   <span><u>A</u>ttachments (0)</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="action-view-history-link" href="/confluence/pages/viewpreviousversions.action?pageId=27832416"  class="action-view-history"   title="">
+                   <span>Page History</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="action-page-permissions-link" href="/confluence/pages/viewinfo.action?pageId=27832416"  class="action-page-permissions"   title="Edit restrictions">
+                   <span>Restrictions</span></a>        </li>
+                            </ul>
+                        <ul  id="action-menu-link-secondary"                 class="section-secondary">
+                                        <li>
+    
+        
+    
+    <a  id="view-page-info-link" href="/confluence/pages/viewinfo.action?pageId=27832416"  class="action-view-info"   title="">
+                   <span>Info</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="link-to-page-link" href="/confluence/pages/viewinfo.action?pageId=27832416"  class=""   title="Link to this Page">
+                   <span>Link to this Page&hellip;</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="view-in-hierarchy-link" href="/confluence/pages/listpages-dirview.action?key=KAFKA&amp;openId=27832416#selectedPageInHierarchy"  class=""   title="">
+                   <span>View in Hierarchy</span></a>        </li>
+                                        <li>
+    
+        
+    
+    <a  id="action-view-source-link" href="/confluence/pages/viewpagesrc.action?pageId=27832416"  class="action-view-source popup-link"   title="">
+                   <span>View Wiki Markup</span></a>        </li>
+                            </ul>
+                    </div>
+    </li>
+            </ul>
+    </div>
+
+    
+    <h1 id="title-heading" class="pagetitle">
+                    <a href="/confluence/display/KAFKA"><img class="logo global" src="/confluence/images/logo/confluence_48_white.png" alt=""></a>        
+		<span id="title-text">
+					            <a href="/confluence/display/KAFKA/Writing+a+Driver+for+Kafka">Writing a Driver for Kafka</a>
+    				</span>
+    </h1>
+
+    
+
+                        
+    <div id="content" class="page view">
+    
+
+
+
+<fieldset id="link-to-page-fields" class="hidden parameters">
+    <input type="hidden" id="linkToThisPageHeading" value="Link to this Page">
+    <input type="hidden" id="linkToThisPageLink" value="Link">
+    <input type="hidden" id="linkToThisPageTinyLink" value="Tiny Link">
+    <input type="hidden" id="linkToThisPageWikiMarkup" value="Wiki Markup">
+    <input type="hidden" id="linkToThisPageClose" value="Close">
+</fieldset>
+<fieldset class="hidden parameters">
+    <input type="hidden" title="movePageDialogViewPageTitle" value="Move Page &ndash; &#8216;Writing a Driver for Kafka&#8217;">
+    <input type="hidden" title="movePageDialogEditPageTitle" value="Set Page Location">
+    <input type="hidden" title="movePageDialogMoveButton" value="Move">
+    <input type="hidden" title="movePageDialogOkButton" value="OK">
+    <input type="hidden" title="movePageDialogCancelButton" value="Cancel">
+    <input type="hidden" title="movePageDialogBrowsePanelTip" value="Click to select the new parent page for this page and its children.">
+    <input type="hidden" title="movePageDialogSearchPanel" value="Search">
+    <input type="hidden" title="movePageDialogHistoryPanel" value="Recently Viewed">
+    <input type="hidden" title="movePageDialogHistoryNoResults" value="There were no recently viewed pages found.">
+    <input type="hidden" title="movePageDialogLocationPanel" value="Known Location">
+    <input type="hidden" title="movePageDialogLocationNotFound" value="The specified page was not found.">
+    <input type="hidden" title="movePageDialogBrowsePanel" value="Browse">
+    <input type="hidden" title="movePageDialogPanelLoadErrorMsg" value="Error reading the panel content from the server.">
+    <input type="hidden" title="movePageDialogPanelLoadErrorTip" value="You could try reloading the page and launching the dialog again.">
+    <input type="hidden" title="movePageDialogPanelLoadErrorStatus" value="HTTP Status">
+    <input type="hidden" title="movePageDialogNoSelectionErrorMsg" value="You must make a selection in the tree before you can move the page.">
+    <input type="hidden" title="movePageDialogSearchError" value="Failed to retrieve search results from the server.">
+    <input type="hidden" title="movePageDialogSearchNoResults" value="There were no pages found containing <b>{0}</b>.">
+    <input type="hidden" title="movePageDialogSearchResultCount" value="Showing <b>{0}</b>-<b>{1}</b> of <b>{2}</b> pages containing <b>{3}</b>.">
+    <input type="hidden" title="movePageDialogMoveFailed" value="Move failed. There was a problem contacting the server.">
+    <input type="hidden" title="movePageDialogCannotChangeSpace" value="You cannot move this page to another space because you do not have permission to remove it from this space.">
+    <input type="hidden" title="pageTitle" value="Writing a Driver for Kafka"/>
+    <input type="hidden" title="parentPageTitle" value="Index"/>
+    <input type="hidden" title="fromPageTitle" value=""/>
+    <input type="hidden" title="spaceKey" value="KAFKA"/>
+    <input type="hidden" title="spaceName" value="Apache Kafka"/>
+    <input type="hidden" title="movePageDialogInvalidLocation" value="You cannot move a page to be underneath itself or its children."/>
+    <input type="hidden" title="movePageDialogOrderingTitle" value="Page Ordering"/>
+    <input type="hidden" title="movePageDialogBackButton" value="Back"/>
+    <input type="hidden" title="movePageDialogMoveAndOrderButton" value="Reorder"/>
+    <input type="hidden" title="movePageDialogNextButton" value="Move"/>
+</fieldset>
+
+<script type="text/x-template" title="movePageDialog">
+    <div class="row information">
+        <div class="inner">
+            <div class="element">
+                Specify the new parent page for this page and its children by space and title.
+            </div>
+        </div>
+    </div>
+    <div class="form">
+        <fieldset>
+            
+
+    <legend class="assistive"><span>Change the Parent Page to a Known Page</span></legend>
+            <div class="row">
+                <label for="new-space">New space:</label>
+                <div class="value new-space-value">
+                    <input id="new-space-key" name="new-space-key" type="hidden" value="KAFKA">
+                                            <span class="space-input">
+                            <input id="new-space" name="new-space" value="Apache Kafka" disabled="disabled">
+                        </span>
+                        <span class="description warning">You cannot move this page to another space because you do not have permission to remove it from this space.</span>
+                                        <div class="new-space-dropdown aui-dd-parent autocomplete"></div>
+                </div>
+            </div>
+            <div class="row">
+                <label for="new-parent-page">New parent page:</label>
+                <div class="value new-parent-page-value">
+                    <span class="page-input">
+                        <input id="new-parent-page" name="new-parent-page" value="Index">
+                    </span>
+                    <span class="description">Start typing a page title to see a list of suggestions.</span>
+                    <div class="new-parent-page-dropdown aui-dd-parent autocomplete"></div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+    <div class="location-info">
+        <div class="row">
+            <label>Current location:</label>
+            <div class="value breadcrumbs-container">
+                <div class="breadcrumbs-line">
+                    <ul id="current-parent-breadcrumbs" class="breadcrumbs">
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <label>New location:</label>
+            <div class="value breadcrumbs-container">
+                <div class="breadcrumbs-line">
+                    <ul id="new-parent-breadcrumbs" class="breadcrumbs">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" title="movePageErrors">
+    <div id="move-errors" class="hidden warning"></div>
+</script>
+<script type="text/x-template" title="movePageBreadcrumb">
+    <li><a class="{2}" title="{3}" tabindex="-1"><span>{0}</span></a></li>
+</script>
+<script type="text/x-template" title="movePageBreadcrumbLoading">
+    <li class="loading"><span>Loading breadcrumbs&hellip;</span></li>
+</script>
+<script type="text/x-template" title="movePageBreadcrumbError">
+    <li class="warning last"><span>Error retrieving breadcrumbs.</span></li>
+</script>
+<script type="text/x-template" title="movePageNoMatchingPages">
+    <ol><li><span class="warning">No matching pages found.</span></li></ol>
+</script>
+<script type="text/x-template" title="movePageNoMatchingSpaces">
+    <ol><li><span class="warning">No matching spaces found.</span></li></ol>
+</script>
+
+<script type="text/x-template" title="movePageSearchPanel">
+    <div class="row information">
+        <div class="inner">
+            <div class="element">
+                Search for and select the new parent page for this page and its children.
+            </div>
+        </div>
+    </div>
+    <div id="move-page-search-container" class="row">
+        <div class="search-form">
+            <fieldset>
+                
+
+    <legend class="assistive"><span>Search for a New Parent Page</span></legend>
+                
+
+    <label  for="move-page-search-query" class="assistive">Search keywords</label>
+                <input class="search-query" id="move-page-search-query">
+                
+
+    <label  for="move-page-search-space" class="assistive">Search in space</label>
+                                    <select id="move-page-search-space" class="search-space" disabled="disabled">
+                        <option value="KAFKA" selected="selected">Apache Kafka</option>
+                    </select>
+                                <input type="button" value="Search">
+                                    <div class="description warning">You cannot move this page to another space because you do not have permission to remove it from this space.</div>
+                            </fieldset>
+        </div>
+        <div class="search-results">
+        </div>
+    </div>
+</script>
+<script type="text/x-template" title="movePageSearchResultsLoading">
+    <div class="searching">Searching…</div>
+</script>
+
+<script type="text/x-template" title="movePageHistoryPanel">
+    <div class="row information">
+        <div class="inner">
+            <div class="element">
+                Select the new parent page for this page and its children from your history.
+            </div>
+        </div>
+    </div>
+    <div id="move-page-search-container" class="row">
+        <div class="search-results">
+        </div>
+    </div>
+</script>
+<script type="text/x-template" title="movePageHistoryLoading">
+    <div class="searching">Loading…</div>
+</script>
+<script type="text/x-template" title="movePageBrowsePanel">
+    <div class="row information">
+        <div class="inner">
+            <div class="element">
+                Click to select the new parent page for this page and its children.
+            </div>
+        </div>
+    </div>
+    <div class="tree"></div>
+</script>
+<script type="text/x-template" title="movePagePanelLoading">
+    <span>Loading…</span>
+</script>
+<script type="text/x-template" title="movePageBrowsePanelSpace">
+    <ul><li id='tree-root-node-item' class='root-node-list-item'><a class='root-node' href='#'>{0}</a></li></ul>
+</script>
+<script type="text/x-template" title="orderingPagePanel">
+<div id="orderingPlaceHolder"></div>
+</script>
+<script type="text/x-template" title="reorderCheckbox">
+<span id="reorderRequirement"><input id="reorderCheck" type="checkbox" name="reorderFlag" title="Choose the position of this page within the list of child pages."/><label for="reorderCheck" title="Choose the position of this page within the list of child pages.">Reorder</label></span>
+</script>
+<script type="text/x-template" title="move-help-link">
+    <div class="dialog-help-link">
+            <a href="http://docs.atlassian.com/confluence/docs-34/Moving+a+Page" target="_blank">Help</a>
+    </div>
+</script>
+<script type="text/x-template" title="searchResultsGrid">
+    <table>
+        <thead>
+            <tr class="header">
+                <th class="search-result-title">Page Title</th>
+                <th class="search-result-space">Space</th>
+                <th class="search-result-date">Updated</th>
+            </tr>
+        </thead>
+    </table>
+</script>
+<script type="text/x-template" title="searchResultsGridCount">
+    <p class="search-result-count">{0}</p>
+</script>
+<script type="text/x-template" title="searchResultsGridRow">
+    <tr class="search-result">
+        <th class="search-result-title"><a href="{1}" class="content-type-{2}"><span>{0}</span></a></th>
+        <td class="search-result-space"><a class="space" href="/confluence/display/{4}/" title="{3}">{3}</a></td>
+        <td class="search-result-date"><span class="date" title="{6}">{5}</span></td>
+    </tr>
+</script>
+<!-- Start restrictions section -->
+<fieldset class="hidden parameters i18n">
+        <input type="hidden" title="i18n.page.perms.error.invalid.entity.names" value="Unknown user or group:">
+        <input type="hidden" title="i18n.page.perms.dialog.heading" value="Page Restrictions">
+        <input type="hidden" title="i18n.page.perms.editing.restricted.to" value="Editing restricted to:">
+        <input type="hidden" title="i18n.cancel.name" value="Cancel">
+        <input type="hidden" title="i18n.close.name" value="Close">
+        <input type="hidden" title="i18n.update.name" value="Save">
+</fieldset>
+
+<script type="text/x-template" title="page-permissions-div">
+<div id="page-permissions-div">
+    <div id="page-permissions-editor-form">
+
+                <div id="page-permissions-error-div" class="hidden">
+            <a href="#" id="permissions-error-div-close">Ok</a>
+            <div></div>
+        </div>
+
+                <div id="page-permissions-type-radios" class="page-permissions-label-rows">
+            <div>
+                <input id="restrictViewRadio" type="radio" checked="checked" name="pagePermissionTypeRadio" value="view"/>
+                <label for="restrictViewRadio">Restrict viewing of this page</label>
+                <input id="restrictEditRadio" type="radio" name="pagePermissionTypeRadio" value="edit"/>
+                <label for="restrictEditRadio">Restrict editing of this page</label>
+            </div>
+        </div>
+        <div id="page-permissions-input" class="page-permissions-label-rows">
+            <div class="page-permissions-label">To:</div>
+            <div id="page-permissions-chooser-box">
+                                <span id="page-permissions-choose-user" class="ajs-button">
+                    
+
+
+
+    
+
+
+
+<a href="#" id='userpicker-popup-link-image' onClick="var picker = window.open('/confluence/spaces/openuserpicker.action?key=KAFKA&amp;startIndex=0&amp;onPopupSubmit=AJS.PagePermissions.addUserPermissions', 'EntitiesPicker', 'status=yes,resizable=yes,top=100,left=200,width=700,height=680,scrollbars=yes'); picker.focus(); return false;"><img src="/confluence/s/2042/9/_/images/icons/user_16.gif" height=16 width=16 border=0 align="absmiddle"  title="Choose users" /></a>
+<a href="#" id='userpicker-popup-link-text' onClick="var picker = window.open('/confluence/spaces/openuserpicker.action?key=KAFKA&amp;startIndex=0&amp;onPopupSubmit=AJS.PagePermissions.addUserPermissions', 'EntitiesPicker', 'status=yes,resizable=yes,top=100,left=200,width=700,height=680,scrollbars=yes'); picker.focus(); return false;">Person...</a>
+
+
+                </span>
+                <span id="page-permissions-choose-group" class="ajs-button">
+                    
+
+
+
+    
+
+ 
+
+<a href="#" id='grouppicker-popup-link-image' onClick="var picker = window.open('/confluence/spaces/opengrouppicker.action?key=KAFKA&amp;startIndex=0&amp;actionName=dosearchgroups.action&amp;onPopupSubmit=AJS.PagePermissions.addGroupPermissions', 'EntitiesPicker', 'status=yes,resizable=yes,top=100,left=200,width=580,height=550,scrollbars=yes'); picker.focus(); return false;"><img src="/confluence/s/2042/9/_/images/icons/group_16.gif" height=16 width=16 border=0 align="absmiddle"  title="Choose groups" /></a>
+<a href="#" id='grouppicker-popup-link-text' onClick="var picker = window.open('/confluence/spaces/opengrouppicker.action?key=KAFKA&amp;startIndex=0&amp;actionName=dosearchgroups.action&amp;onPopupSubmit=AJS.PagePermissions.addGroupPermissions', 'EntitiesPicker', 'status=yes,resizable=yes,top=100,left=200,width=580,height=550,scrollbars=yes'); picker.focus(); return false;">Group...</a>
+
+
+                </span>
+            </div>
+            <div id="page-permissions-input-box">
+                                <span>
+                    <input type="text" id="page-permissions-names-input" class="input-placeholder" value="Enter user or group name" name="permissionNames" size="30" autocomplete="off"/>
+                </span>
+                <input
+    type="hidden"
+                            id="page-permissions-names-hidden"           />                <img height="16px" width="1px" src="/confluence/s/2042/9/_/images/border/spacer.gif"/>
+                <input type="button" id="add-typed-names" value="Restrict">
+            </div>
+        </div>
+    </div>
+    <div id="page-permissions-tables">
+        <div id="page-permissions-table-div">
+                        <table id="page-permissions-table" class="page-permissions-table">
+                <tr id="page-permissions-no-views" class="marker-row">
+                    <td colspan="3" class="page-permissions-marker-cell"><span>No view restrictions are defined for this page</span></td>
+                </tr>
+                <tr id="page-permissions-no-edits" class="marker-row">
+                    <td colspan="3" class="page-permissions-marker-cell"><span>No edit restrictions are defined for this page</span></td>
+                </tr>
+            </table>
+        </div>
+        <div id="page-inherited-permissions-table-div" class="hidden">
+            <span id="page-inherited-permissions-table-desc">
+                <a class="icon twisty-closed">Show/Hide</a>
+                <a id="toggle-inherited-permissions" title="Click to see inherited restrictions">This page has restricted parent pages. It can only be seen by users who can see those parent pages.</a>
+            </span>
+            <div id="page-inherited-permissions-tables" class="hidden page-inheritance-togglable"></div>
+        </div>
+    </div>
+</div>
+</script>
+
+<script type="text/x-template" title="permissions-row-template">
+    <tr class="permission-row">
+                                
+                <td class="page-permissions-marker-cell" width="20%">
+            <span>Viewing restricted to:</span>
+        </td>
+                <td class="permission-entity" nowrap="true" width="40%">
+            <span class="entity-container">
+                <img class="permission-entity-picture"/>
+                <span class="permission-entity-display-name"></span>
+                <span class="permission-entity-name-wrap">&nbsp;(<span class="permission-entity-name"></span>)</span>
+            </span>
+        </td>
+        <td class="permission-detail-column">
+            <div class="permission-remove-div">
+                <a href="#" class="remove-permission-link">Remove restriction</a>
+            </div>
+        </td>
+    </tr>
+</script>
+<script type="text/x-template" title="permissions-username-no-suggestion-template">
+    <ol>
+        <li><a href="#" class="message"><span>No matches</span></a></li>
+    </ol>
+</script>
+<script type="text/x-template" title="page-inherited-permissions-table-div-template">
+        <div class="page-inherited-permissions-owner-div">
+        <div class="page-inherited-permissions-table-desc">Viewing restrictions apply to “<a></a>”. In order to see “<span></span>”, a user must be in the following list of users and groups:</div>
+        <table class="page-permissions-table"></table>
+    </div>
+</script>
+<script type="text/x-template" title="page-restrictions-help-link">
+    <div class="dialog-help-link">
+            <a href="http://docs.atlassian.com/confluence/docs-34/Page+Restrictions" target="_blank">Help</a>
+    </div>
+</script>
+<!-- End restrictions section -->
+
+<fieldset class="hidden parameters">
+    <input type="hidden" title="spaceKeyEncoded" value="KAFKA">
+    <input type="hidden" title="spaceKeyDecoded" value="KAFKA">
+</fieldset>
+
+
+        
+    
+    
+        
+                            
+    
+
+                    
+
+        
+        <a href="#page-metadata-end" class="assistive">Skip to end of metadata</a>
+<div id="page-metadata-start" class="assistive"></div>
+
+    <div class="page-metadata">
+        <ul>
+                            <li class="page-metadata-item noprint">
+    
+            
+    
+    <a  id="content-metadata-page-restrictions" href="#"  class="page-metadata-icon page-restrictions hidden"   title="Page restrictions apply. Click the lock icon to view or edit the restriction.">
+                   <span>Page restrictions apply</span></a>        </li>
+                        <li class="page-metadata-modification-info">
+                                    Added by <a href="/confluence/display/~dave@datadoghq.com"
+                          class="url fn"
+                   >David Ormsbee</a>, last edited by <a href="/confluence/display/~araddon"
+                          class="url fn"
+                   >Aaron Raddon</a> on Mar 14, 2012
+                                                                <span class="noprint">&nbsp;(<a id="view-change-link" href="/confluence/pages/diffpages.action?pageId=27832416&originalId=27841060">view change</a>)</span>
+                                                </li>
+                    </ul>
+          <div id="version-comment" class="noteMacro" style="display: none;">
+      <strong>Comment:</strong>
+      <br />
+  </div>
+    </div>
+
+
+<a href="#page-metadata-start" class="assistive">Go to start of metadata</a>
+<div id="page-metadata-end" class="assistive"></div>
+        
+        <fieldset class="hidden parameters">
+                        <input type="hidden" title="browsePageTreeMode" value="view">
+            <input type="hidden" title="parentPageId" value="27821303">
+        </fieldset>
+
+        <div class="wiki-content">
+           <!-- wiki content -->
+            <h1><a name="WritingaDriverforKafka-WritingaDriverforKafka"></a>Writing a Driver for Kafka</h1>
+
+<p>This is an attempt to document Kafka's wire format and implementation details to encourage others to write drivers in various languages. Much of this document is based off of the Kafka <a href="/confluence/display/KAFKA/Wire+Format" title="Wire Format">Wire Format</a> article by Jeffrey Damick and Taylor Gautier.</p>
+
+<h2><a name="WritingaDriverforKafka-StatusofthisDocument"></a>Status of this Document</h2>
+
+<p>I'm currently in the process of verifying many of the things said here, to make sure they're actually a result of the protocol and not some quirk of our driver. I've tried to flag those with "FIXME" notes, but I'm sure I've missed a few.</p>
+
+<p>I really want to make this into the document that I wish we had at Datadog when we first started working on Kafka driver code. Corrections and comments would be greatly appreciated. Please drop me an email at <a href="mailto:dave@datadoghq.com" class="external-link" rel="nofollow">dave@datadoghq.com</a>.</p>
+
+<h2><a name="WritingaDriverforKafka-GroundRules"></a>Ground Rules</h2>
+
+<p>If you haven't read the <a href="http://incubator.apache.org/kafka/design.html" class="external-link" rel="nofollow">design doc</a>, read it. There are a few things that are outdated, but it's a great overview of Kafka.</p>
+
+<p>Some really high level takeaways to get started:</p>
+
+<ul>
+	<li>Kafka has topics, and topics have numbered partitions starting from 0. A topic can be created at runtime just by writing to it, but the number of partitions per topic is determined by broker configuration.</li>
+	<li>Kafka stores messages on disk, in a series of large, append-only log files broken up into segments. Each topic+partition is a directory of these segment files. For more details, see <a href="#WritingaDriverforKafka-whataresegmentfiles">What are Segment Files</a>.</li>
+	<li>An offset is just the byte offset in a given log for a topic+partition. The messages don't have any other unique identifier. They're simply stored back to back in the segment files, and you ask for them by their byte offset.</li>
+	<li>When producing messages, the driver has to specify what topic and partition to send the message to. When requesting messages, the driver has to specify what topic, partition, <em>and offset</em> it wants them pulled from.</li>
+	<li>While you can request "old" messages if you know their topic, partition, and offset, Kafka does not have a message index. You cannot efficiently query Kafka for the N-1000th message, or ask for all messages written between 30 and 35 minutes ago.</li>
+	<li>Kafka tends to do the simplest thing possible and relies on smarter clients to keep bookkeeping. The broker does not keep track of what the client has read. More advanced setups use ZooKeeper to help with this tracking, but that is currently beyond the scope of this document.</li>
+	<li>The protocol <a href="/confluence/display/KAFKA/New+Wire+Format+Proposal" title="New Wire Format Proposal">is a work in progress</a>, and new point releases can introduce backwards incompatibile changes.</li>
+	<li>The broker runs on port 9092 by default.</li>
+	<li>If you are testing with multiple brokers on the same machine, you'll need to change both the port that they listen on (in the config file), as well as the JMX port they use. To specify a different JMX port, set the environment property JMX_PORT when starting Kafka.</li>
+</ul>
+
+
+<h2><a name="WritingaDriverforKafka-BasicObjects"></a>Basic Objects</h2>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Request Header (all single non-multi requests begin with this)</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                       REQUEST_LENGTH                          |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |         REQUEST_TYPE          |        TOPIC_LENGTH           |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                                                               /
+  /                    TOPIC (variable length)                    /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                           PARTITION                           |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  REQUEST_LENGTH = int32 <span class="code-comment">// Length in bytes of entire request (excluding <span class="code-keyword">this</span> field)
+</span>  REQUEST_TYPE   = int16 <span class="code-comment">// See table below
+</span>  TOPIC_LENGTH   = int16 <span class="code-comment">// Length in bytes of the topic name
+</span>
+  TOPIC = <span class="code-object">String</span> <span class="code-comment">// Topic name, ASCII, not <span class="code-keyword">null</span> terminated
+</span>                 <span class="code-comment">// This becomes the name of a directory on the broker, so no
+</span>                 <span class="code-comment">// chars that would be illegal on the filesystem.
+</span>
+  PARTITION = int32 <span class="code-comment">// Partition to act on. <span class="code-object">Number</span> of available partitions is
+</span>                    <span class="code-comment">// controlled by broker config. Partition numbering
+</span>                    <span class="code-comment">// starts at 0.
+</span>
+  ============  =====  =======================================================
+  REQUEST_TYPE  VALUE  DEFINITION
+  ============  =====  =======================================================
+  PRODUCE         0    Send a group of messages to a topic and partition.
+  FETCH           1    Fetch a group of messages from a topic and partition.
+  MULTIFETCH      2    Multiple FETCH requests, chained together
+  MULTIPRODUCE    3    Multiple PRODUCE requests, chained together
+  OFFSETS         4    Find offsets before a certain time (<span class="code-keyword">this</span> can be a bit
+                       misleading, please read the details of <span class="code-keyword">this</span> request).
+  ============  =====  =======================================================
+</pre>
+</div></div>
+
+<p>Very similar to the Request-Header is the multi-request header used for requesting more than one topic-partition combo at a time.  Either for multi-produce, or multi-fetch.  </p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Multi-Request Header (more than one topic-partition combo)</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                       REQUEST_LENGTH                          |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |         REQUEST_TYPE          |    TOPICPARTITION_COUNT       |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ 
+ REQUEST_LENGTH       = int32 <span class="code-comment">// Length in bytes of entire request (excluding <span class="code-keyword">this</span> field)
+</span> REQUEST_TYPE         = int16 <span class="code-comment">// See table above
+</span> TOPICPARTITION_COUNT = int16 <span class="code-comment">// number of unique topic-partition combos in <span class="code-keyword">this</span> request
+</span>
+</pre>
+</div></div>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Response Header (all responses begin with this 6 byte header)</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                        RESPONSE_LENGTH                        |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |         ERROR_CODE            |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  RESPONSE_LENGTH = int32 <span class="code-comment">// Length in bytes of entire response (excluding <span class="code-keyword">this</span> field)
+</span>  ERROR_CODE = int16 <span class="code-comment">// See table below.
+</span>
+  ================  =====  ===================================================
+  ERROR_CODE        VALUE  DEFINITION
+  ================  =====  ===================================================
+  Unknown            -1    Unknown Error
+  NoError             0    Success
+  OffsetOutOfRange    1    Offset requested is no longer available on the server
+  InvalidMessage      2    A message you sent failed its checksum and is corrupt.
+  WrongPartition      3    You tried to access a partition that doesn't exist
+                           (was not between 0 and (num_partitions - 1)).
+  InvalidFetchSize    4    The size you requested <span class="code-keyword">for</span> fetching is smaller than
+                           the message you're trying to fetch.
+  ================  =====  ===================================================
+</pre>
+</div></div>
+
+<p>FIXME: Add tests to verify all these codes.</p>
+
+<p>FIXME: Check that there weren't more codes added in 0.7.</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Message (Kafka 0.6 and earlier)</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                             LENGTH                            |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |     MAGIC       |                   CHECKSUM                  |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  | CHECKSUM (cont.)|                    PAYLOAD                  /
+  +-+-+-+-+-+-+-+-+-+                                             /
+  /                         PAYLOAD (cont.)                       /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  LENGTH   = int32 <span class="code-comment">// Length in bytes of entire message (excluding <span class="code-keyword">this</span> field)
+</span>  MAGIC    = int8  <span class="code-comment">// 0 is the only valid value
+</span>  CHECKSUM = int32 <span class="code-comment">// CRC32 checksum of the PAYLOAD
+</span>  PAYLOAD  = Bytes[] <span class="code-comment">// Message content</span>
+</pre>
+</div></div>
+
+<p>The offsets to request messages are just byte offsets. To find the offset of the next message, take the offset of this message (that you made in the request), and add LENGTH + 4 bytes (length of this message + 4 byte header to represent the length of this message).</p>
+
+<p>Starting with version 0.7, Kafka added an extra field for compression:</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Message (Kafka 0.7 and later)</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                             LENGTH                            |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |     MAGIC       |  COMPRESSION  |           CHECKSUM          |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |      CHECKSUM (cont.)           |           PAYLOAD           /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                             /
+  /                         PAYLOAD (cont.)                       /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  LENGTH = int32 <span class="code-comment">// Length in bytes of entire message (excluding <span class="code-keyword">this</span> field)
+</span>  MAGIC = int8 <span class="code-comment">// 0 = COMPRESSION attribute <span class="code-object">byte</span> does not exist (v0.6 and below)
+</span>               <span class="code-comment">// 1 = COMPRESSION attribute <span class="code-object">byte</span> exists (v0.7 and above)
+</span>  COMPRESSION = int8 <span class="code-comment">// 0 = none; 1 = gzip; 2 = snappy;
+</span>                     <span class="code-comment">// Only exists at all <span class="code-keyword">if</span> MAGIC == 1
+</span>  CHECKSUM = int32  <span class="code-comment">// CRC32 checksum of the PAYLOAD
+</span>  PAYLOAD = Bytes[] <span class="code-comment">// Message content</span>
+</pre>
+</div></div>
+
+<p>Note that compression is end-to-end. Meaning that the Producer is responsible for sending the compressed payload, it's stored compressed on the broker, and the Consumer is responsible for decompressing it. Gzip gives better compression ratio, snappy gives faster performance.</p>
+
+<p>Let's look at what compressed messages act like:</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |          CP1         |         CP2        |         CP3         |
+  | M1 | M2 | M3 | M4... | M12 | M13 | M14... | M26 | M27 | M28 ... |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</pre>
+</div></div>
+
+<p>In this scenario, let's say that <tt>M1</tt>, <tt>M2</tt>, etc. represent complete, <em>uncompressed</em> messages (including headers) that the user of your library wants to send. What your driver needs to do is take <tt>M1</tt>, <tt>M2</tt>... up to some predetermined number/size, concatenate them together, and then compress them using gzip or snappy. The result (<tt>CP1</tt> in  this case) becomes the <tt>PAYLOAD</tt> for the <em>compressed</em> message <tt>CM1</tt> that your library will send to Kafka.</p>
+
+<p>It also means that we have to be careful about calculating the offsets. To Kafka, <tt>M1</tt>, <tt>M2</tt>, don't really exist. It only sees the <tt>CM1</tt> you send. So when you make calculations for the offset you can fetch next, you have to make sure you're doing it on the boundaries of the compressed messages, not the inner messages.</p>
+
+<p>FIXME: Haven't implemented compression yet, need to verify this is correct.</p>
+
+<h2><a name="WritingaDriverforKafka-Interactions"></a>Interactions</h2>
+
+<h3><a name="WritingaDriverforKafka-Produce"></a>Produce</h3>
+
+<p>To produce messages from the driver and send to Kafka, use the following format:</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Produce Request</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                         REQUEST HEADER                        /
+  /                                                               /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                         MESSAGES_LENGTH                       |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                                                               /
+  /                            MESSAGES                           /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  MESSAGES_LENGTH = int32 <span class="code-comment">// Length in bytes of the MESSAGES section
+</span>  MESSAGES = Collection of MESSAGES (see above)
+</pre>
+</div></div>
+
+<p>There is no response to a <tt>PRODUCE</tt> Request. There is currently no way to tell if the produce was successful or not. This is <a href="https://issues.apache.org/jira/browse/KAFKA-49" class="external-link" rel="nofollow">being worked</a>.</p>
+
+<h3><a name="WritingaDriverforKafka-MultiProduce"></a>Multi-Produce</h3>
+
+<p>The multi-produce request has a different header, with the (topic-length/topic/message_length/messages) repeated many times.</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Multi-Produce Request</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+Here is the general format of the multi-produce request, see multi-request header above.
+
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ /                   MULTI-REQUEST HEADER                        /
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                   TOPIC-PARTION/MESSAGES (n times)             |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+Per Topic-Partition (repeated n times)
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |        TOPIC_LENGTH           |  TOPIC (variable length)      /
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                           PARTITION                           |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                         MESSAGES_LENGTH                       |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ /                            MESSAGES                           /
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+The TOPIC_LENGTH, TOPIC, PARTITION, MESSAGES_LENGTH are documented above <span class="code-keyword">for</span> size.
+
+</pre>
+</div></div>
+
+<h3><a name="WritingaDriverforKafka-Fetch"></a>Fetch</h3>
+
+<p>Reading messages from a specific topic/partition combination.</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Fetch Request</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                         REQUEST HEADER                        /
+  /                                                               /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                             OFFSET                            |
+  |                                                               |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                            MAX_SIZE                           |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  REQUEST_HEADER = See REQUEST_HEADER above
+  OFFSET   = int64 <span class="code-comment">// Offset in topic and partition to start from
+</span>  MAX_SIZE = int32 <span class="code-comment">// MAX_SIZE of the message set to <span class="code-keyword">return</span></span>
+</pre>
+</div></div>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Fetch Response</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                          RESPONSE HEADER                      /
+  /                                                               /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                        MESSAGES (0 or more)                   /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</pre>
+</div></div>
+
+<p>Edge case behavior:</p>
+
+<ul>
+	<li>If you request an offset that does not exist for that topic/partition combination, you will get an OffsetOutOfRange error. While Kafka keeps messages persistent on disk, it also deletes old log files to save space.</li>
+	<li>FIXME: VERIFY &#8211; If you request a fetch from a partition that does not exist, you will get a WrongPartition error.</li>
+	<li>FIXME: VERIFY &#8211; If the MAX_SIZE you specify is smaller than the largest message that would be fetched, you will get an InvalidFetchSize error.</li>
+	<li>FIXME: VERIFY &#8211; What happens when you ask for an offset that's in the middle of a message? It just sends you the chunk without checking?</li>
+	<li>FIXME &#8211; Try invalid topic, invalid partition reading</li>
+	<li>FIXME &#8211; Look at InvalidMessageSizeException</li>
+</ul>
+
+
+<p>Normal, but possibly unexpected behavior:</p>
+
+<ul>
+	<li>If you ask the broker for up to 300K worth of messages from a given topic and partition, it will send you the appropriate headers followed by a 300K chunk worth of the message log. If 300K ends in the middle of a message, you get  half a message at the end. If it ends halfway through a message header, you get a broken header. This is not an error, this is Kafka pushing complexity outward to the driver to make the broker simple and fast.</li>
+	<li>Kafka stores its messages in log files of a configurable size (512MB by default) called segments. A fetch of messages will not cross the segment boundary to read from multiple files. So if you ask for a fetch of 300K's  worth of messages and the offset you give is such that there's only one message at the end of that segment file, then you will get just one message back. The next time you call fetch with the following offset, you'll get a full set of messages from the next segment file. Basically, don't make any assumptions about how many messages are remaining from how many you got in the last fetch.</li>
+</ul>
+
+
+<h3><a name="WritingaDriverforKafka-MultiFetch"></a>Multi-Fetch</h3>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Multi-Fetch Request</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                   MULTI-REQUEST HEADER                        /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |             TOPIC-PARTION-FETCH-REQUEST  (n times )           |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+  REQUEST_HEADER = See MULTI_REQUEST_HEADER above
+  OFFSET   = int64 <span class="code-comment">// Offset in topic and partition to start from
+</span>  MAX_SIZE = int32 <span class="code-comment">// MAX_SIZE of the message set to <span class="code-keyword">return</span>
+</span>  The TOPIC_LENGTH, TOPIC, PARTITION, MESSAGES_LENGTH are documented above <span class="code-keyword">for</span> size.
+
+ Per Topic-Partition-Fetch- Request (repeated n times)
+ 0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |        TOPIC_LENGTH           |  TOPIC (variable length)      /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                           PARTITION                           |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                         OFFSET                                |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                            MAX_SIZE                           /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+</pre>
+</div></div>
+
+
+<h3><a name="WritingaDriverforKafka-Offsets"></a>Offsets</h3>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Offsets Request</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                         REQUEST HEADER                        /
+  /                                                               /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                              TIME                             |
+  |                                                               |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                     MAX_NUMBER (of OFFSETS)                   |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  TIME = int64 <span class="code-comment">// Milliseconds since UNIX Epoch.
+</span>               <span class="code-comment">// -1 = LATEST
+</span>               <span class="code-comment">// -2 = EARLIEST
+</span>  MAX_NUMBER = int32 <span class="code-comment">// Return up to <span class="code-keyword">this</span> many offsets</span>
+</pre>
+</div></div>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeHeader panelHeader" style="border-bottom-width: 1px;border-bottom-style: solid;"><b>Offsets Response</b></div><div class="codeContent panelContent">
+<pre class="code-java">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                         RESPONSE HEADER                       /
+  /                                                               /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                         NUMBER_OFFSETS                        |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  /                       OFFSETS (0 or more)                     /
+  /                                                               /
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  NUMBER_OFFSETS = int32 <span class="code-comment">// How many offsets are being returned
+</span>  OFFSETS = int64[] <span class="code-comment">// List of offsets</span>
+</pre>
+</div></div>
+
+<p>This one can be deceptive. It is <em>not</em> a way to get the the precise offset that occurred at a specific time. Kafka doesn't presently track things at that level of granularity, though there is a <a href="https://issues.apache.org/jira/browse/KAFKA-87" class="external-link" rel="nofollow">proposal to do so</a>. To understand how this request really works, you should know how Kafka stores data. If you're unfamiliar with segment files, please see <a href="#WritingaDriverforKafka-whataresegmentfiles">What are Segment Files</a>.</p>
+
+<p>What Kafka does here is return up to MAX_NUMBER of offsets, sorted in descending order, where the offsets are:</p>
+
+<ol>
+	<li>The first offset of every segment file for a given partition with a modified time less than <tt>TIME</tt>.</li>
+	<li>If the last segment file for the partition is not empty and was modified earlier than <tt>TIME</tt>, it will return both the first offset for that segment and the high water mark. The high water mark is not the offset of the last message, but rather the offset that the next message sent to the partition will be written to.</li>
+</ol>
+
+
+<p>There are special values for <tt>TIME</tt> indicating the earliest (-2) and latest (-1) time, which will fetch you the first and last offsets, respectively. Note that because offsets are pulled in descending order, asking for the earliest offset will always return you a list with a single element.</p>
+
+<p>Because segment files are quite large and fine granularity is not possible, you may find yourself using this call mostly to get the beginning and ending offsets.</p>
+
+<p><a name="WritingaDriverforKafka-whataresegmentfiles"></a></p>
+
+<h4><a name="WritingaDriverforKafka-Whataresegmentfiles%3F"></a>What are segment files?</h4>
+
+<p>Say your Kafka broker is configured to store its log files in <tt>/tmp/kafka-logs</tt> and you have a topic named "dogs", with two partitions. Kafka will create a directory for each partition:</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  /tmp/kafka-logs/dogs-0
+  /tmp/kafka-logs/dogs-1
+</pre>
+</div></div>
+
+<p>Inside each of these partition directories, it will store the log for that topic+parition as a series of segment files. So for instance, in <tt>dogs-0</tt>, you might have:</p>
+
+<div class="code panel" style="border-style: solid;border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  00000000000000000000.kafka
+  00000000000536890406.kafka
+  00000000001073761356.kafka
+</pre>
+</div></div>
+
+<p>Each file is named after the offset represented by the first message in that file. The size of the segments are configurable (512MB by default). Kafka will write to the current segment file until it goes over that size, and then will write the next message in new segment file. The files are actually slightly larger than the limit, because Kafka will finish writing the message &#8211; a single message is never split across multiple files.</p>
+
+
+<h2><a name="WritingaDriverforKafka-ZooKeeper"></a>ZooKeeper</h2>
+
+<p>Kafka relies on <a href="http://zookeeper.apache.org/" class="external-link" rel="nofollow">ZooKeeper</a> in order to coordinate multiple brokers and consumers. If you're unfamiliar with ZooKeeper, just think of it as a server that allows you to atomically create nodes in a tree, assign values to those nodes, and sign up for notifications when a node or its children get modified. Nodes can be either be permanent or ephemeral, the latter meaning that the nodes will disappear if the process that created them disconnects (after some timeout delay).</p>
+
+<p>While creating the nodes we care about, you'll often need to create the intermediate nodes that they are children of. For instance, since offsets are stored at <tt>/consumers/[consumer_group]/offsets/[topic]/[broker_id]-[partition_id]</tt>, something has to create <tt>/consumers</tt>, <tt>/consumers/[consumer_group]</tt>, etc. All nodes have values associated with them in ZooKeeper, even if Kafka doesn't use them for anything. To make debugging easier, the value that should be stored at an intermediate node is the ID of the node's creator. In practice that means that the first Consumer you create will need to make this skeleton structure and store its ID as the value for <tt>/consumers</tt>, <tt>/consumers/[consumer_group]</tt>, etc.</p>
+
+<p>ZooKeeper has Java and C libraries, and can be run as a cluster.</p>
+
+<h3><a name="WritingaDriverforKafka-BasicResponsibilities"></a>Basic Responsibilities</h3>
+
+<p>Kafka Brokers, Consumers, and Producers all have to coordinate using ZooKeeper. The following is a high level overview of their ZooKeeper interactions. We assume here that a Consumer only consumes one topic</p>
+
+<p>Kafka Broker</p>
+<ul>
+	<li>When starting up:
+	<ul>
+		<li>Publish its <tt>brokerid</tt> &#8211; a simple integer ID that uniquely identifies it.</li>
+		<li>Publish its location, so that Producers and Consumers can find it.</li>
+		<li>Publish all topics presently in the Broker, along with the number of partitions for each topic.</li>
+	</ul>
+	</li>
+	<li>Whenever a new topic is created:
+	<ul>
+		<li>Publish the topic, along with the number of partitions in the topic</li>
+	</ul>
+	</li>
+</ul>
+
+
+<p>Producer</p>
+<ul>
+	<li>Read the locations for all Brokers with a given topic, so that we know where to send messages to.</li>
+</ul>
+
+
+<p>Consumer</p>
+<ul>
+	<li>Publish what ConsumerGroup we belong to.</li>
+	<li>Publish our unique ID so other Consumers can see us.</li>
+	<li>Determine which partitions on which Brokers this Consumer is responsible for, and publish its ownership of them.</li>
+	<li>Publish what offset we've successfully read up to for every partition that we're responsible for.</li>
+</ul>
+
+
+<p>Every Consumer belongs to exactly one ConsumerGroup. A Consumer can read from multiple brokers and partitions, but every unique combination of (ConsumerGroup, Broker, Topic, Partition) is read by only one and only one Consumer. ConsumerGroups allow you to easily support topic or queue semantics. If your Consumers are all in separate ConsumerGroups, each message goes to every Consumer. If all your Consumers are in the same ConsumerGroup, then each message goes to only one Consumer. </p>
+
+<p>Well, for the most part. The orchestration Kafka uses guarantees at least once delivery, but has edge cases that may yield duplicate delivery even in a queue (one ConsumerGroup) arrangement.</p>
+
+<h3><a name="WritingaDriverforKafka-KafkaBroker"></a>Kafka Broker</h3>
+
+<p>All these nodes are written by the Kafka Broker. Your client just needs to be able to read this broker data and understand its limitations.</p>
+
+<div class='table-wrap'>
+<table class='confluenceTable'><tbody>
+<tr>
+<th class='confluenceTh'>Role           </th>
+<th class='confluenceTh'> ZooKeeper Path                  </th>
+<th class='confluenceTh'>Type     </th>
+<th class='confluenceTh'> Data Description                                        </th>
+</tr>
+<tr>
+<td class='confluenceTd'>ID Registry     </td>
+<td class='confluenceTd'><tt>/brokers/ids/[0..N]</tt>           </td>
+<td class='confluenceTd'>Ephemeral </td>
+<td class='confluenceTd'>String in the format of "creator:host:port" of the broker.</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Topic Registry  </td>
+<td class='confluenceTd'><tt>/brokers/topics/[topic]/[0..N]</tt></td>
+<td class='confluenceTd'>Ephemeral </td>
+<td class='confluenceTd'>Number of partitions that topic has on that Broker.       </td>
+</tr>
+</tbody></table>
+</div>
+
+
+<p>So let's take the example of the following hypothetical broker:</p>
+<ul>
+	<li>Broker ID is 2 (<tt>brokerid=2</tt> in the Kafka config file)</li>
+	<li>Running on IP 10.0.0.12</li>
+	<li>Using port 9092</li>
+	<li>Topics:
+	<ul>
+		<li>"dogs" with 4 partitions</li>
+		<li>"mutts" with 5 partitions</li>
+	</ul>
+	</li>
+</ul>
+
+
+<p>Then the broker would register the following:</p>
+<ul>
+	<li><tt>/brokers/ids/2 = 10.0.0.12-1324306324402:10.0.0.12:9092</tt></li>
+	<li><tt>/brokers/topics/dogs/2 = 4</tt></li>
+	<li><tt>/brokers/topics/mutts/2 = 5</tt></li>
+</ul>
+
+
+<p>Some things to note:</p>
+<ul>
+	<li>Broker IDs don't have to be sequential, but they do have to be integers. They are a config setting, and not randomly generated. If a Kafka server goes offline for some reason and comes back an hour later, it should be reconnecting with the same Broker ID.</li>
+	<li>The ZooKeeper hierarchy puts individual brokers under topics because Producers and Consumers will want to put a watch on a specific topic node, to get notifications when new brokers enter or leave the pool.</li>
+	<li>The Broker's description is formatted such that it's <tt>creator:host:port</tt>. The host will also up as part of the creator because of the version of UUID that Kafka's using, but don't rely on that behavior. Always split on ":" and extract the host that will be the second element.</li>
+	<li>These nodes are ephemeral, so if the Broker crashes or is disconnected from the network, it will automatically be removed. But this removal is not instantaneous, and it might show up for a few seconds. This can cause errors when a broker crashes and is restarted, and subsequently tries to re-create its still existent Broker ID registry node.</li>
+</ul>
+
+
+<h3><a name="WritingaDriverforKafka-Producer"></a>Producer</h3>
+
+<p>Reads:</p>
+<ul>
+	<li><tt>/brokers/topics/[topic]/[0..N]</tt>, so that it knows what Broker IDs are available for this topic, and how many partitions they have.</li>
+	<li><tt>/brokers/ids/[0..N]</tt>, to find the address of the Brokers, so it knows how to connect to them.</li>
+</ul>
+
+
+<p>Watches:</p>
+<ul>
+	<li><tt>/brokers/topics/[topic]</tt>, so that it knows when Brokers enter and exit the pool.</li>
+	<li><tt>/brokers/ids</tt>, so that it can update the Broker addresses in case you bring down a Broker and bring it back up under a different IP/port.</li>
+</ul>
+
+
+<p>Producers are fairly straightforward (with one caveat), and a Producer never has to write anything to ZooKeeper. The basic operation goes like this:</p>
+
+<ol>
+	<li>A Producer is created for a topic.</li>
+	<li>The Producer reads the Broker-created nodes in <tt>/brokers/ids/[0..N]</tt> and sets up an internal mapping of Broker IDs =&gt; Kafka connections.</li>
+	<li>The Producer reads the nodes in <tt>/brokers/topics/[topic]/[0..N]</tt> to find the number of partitions it can send to for each Broker.</li>
+	<li>The Producer takes every Broker+Partition combination and puts them in an internal list.</li>
+	<li>When a Producer is asked to send a message set, it picks from one of it's Broker+Partition combinations, looks up the appropriate Broker address, and sends the message set to that Broker, for that topic and partition. The precise mechanism for choosing a destination is undefined, but debugging would probably be easier if you ordered them by Broker+Partition (e.g. "0-3") and used a hash function to pick the index you wanted to send to. You could also just make it randomly choose.</li>
+</ol>
+
+
+<p>The Producer's internal mappings change when:</p>
+<ul>
+	<li>When a Broker leaves the pool or a new Broker enters it.</li>
+	<li>The number of partitions a Broker publishes for a topic changes.</li>
+</ul>
+
+
+<p>The latter is actually <em>extremely</em> common, which brings us to the only tricky part about Producers &#8211; dealing with new topics.</p>
+
+<h4><a name="WritingaDriverforKafka-CreatingNewTopics"></a>Creating New Topics</h4>
+
+<p>Topics are not pre-determined. You create them just by sending a new message to Kafka for that topic. So let's say you have a number of Brokers that have joined the pool and don't list themselves in <tt>/brokers/topics/[topic]/[0..N]</tt> for the topic you're interested in. They haven't done so because those topics don't exist on those Brokers yet. But our Producer knows the Brokers themselves exist, because they are in the Broker registry at <tt>/brokers/ids/[0..N]</tt>. We definitely need to send messages to them, but what partitions are safe to send to? Brokers can be configured differently from each other and topics can be configured on an individual basis, so there's no way to infer the definitive answer by looking at what's in ZooKeeper.</p>
+
+<p>The solution is that for new topics where the number of available partitions on the Broker is unknown, you should just send to partition 0. Every Broker will at least have that one partition available. As soon as you write it and the topic comes into existence on the Broker, the Broker will publish all available partitions in ZooKeeper. You'll get notified by the watch you put on <tt>/brokers/topics/[topic]</tt>, and you'll add the new Broker+Partitions to your destination pool.</p>
+
+<h3><a name="WritingaDriverforKafka-Consumer"></a>Consumer</h3>
+
+<p>FIXME: Go over all the registration stuff that needs to happen.</p>
+
+<h4><a name="WritingaDriverforKafka-Rebalancing"></a>Rebalancing</h4>
+
+<p>Occurs: When Brokers or Consumers enter or leave the pool.</p>
+
+<p>Objectives:</p>
+<ul>
+	<li>All Consumers in a ConsuerGroup will come to a consensus as to who is consuming what.</li>
+	<li>Each Broker+Topic+Partition combination is consumed by one and only one Consumer, even if it means that some Consumers don't get anything at all.</li>
+	<li>A Consumer should try to have as many partitions on the same Broker as possible, so sort the list by [Broker ID]-[Partition] (0-0, 0-1, 0-2, etc.), and assign them in chunks.</li>
+	<li>Consumers are sorted by their Consumer IDs. If there are three Consumers, two Brokers, and three partitions in each, the split might look like:
+	<ul>
+		<li>Consumer A: [0-0, 0-1]</li>
+		<li>Consumer B: [0-2, 1-0]</li>
+		<li>Consumer C: [1-1, 1-2]</li>
+	</ul>
+	</li>
+	<li>If the distribution can't be even and some Consumers must have more partitions than others, the extra partitions always go to the earlier consumers on the list. So you could have a distribution like 4-4-4-4 or 5-5-4-4, but never 4-4-4-5 or 4-5-4-4.</li>
+</ul>
+        </div>
+
+        <!--
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
+         <rdf:Description
+    rdf:about="https://cwiki.apache.org/confluence/display/KAFKA/Writing+a+Driver+for+Kafka"
+    dc:identifier="https://cwiki.apache.org/confluence/display/KAFKA/Writing+a+Driver+for+Kafka"
+    dc:title="Writing a Driver for Kafka"
+    trackback:ping="https://cwiki.apache.org/confluence/rpc/trackback/27832416"/>
+</rdf:RDF>
+-->
+
+            
+    
+
+
+<fieldset class="hidden parameters">
+    <legend>Labels parameters</legend>
+    <input type="hidden" id="editLabel" value="Edit">
+    <input type="hidden" id="addLabel" value="Add Labels">
+    <input type="hidden" id="domainName" value="https://cwiki.apache.org/confluence">
+    <input type="hidden" id="pageId" value="27832416">
+    <input type="hidden" id="spaceKey" value="KAFKA">
+</fieldset>
+
+<div id="labels-section" class="pageSection">
+    <div id="default-labels-header" class="section-header">
+        <h2 id="labels-section-title" class="section-title  hidden ">Labels</h2>
+            </div>
+
+    <div class="labels-editor">
+        <div id="labelsList">
+                    </div>
+
+        <span class="errorMessage error" id="errorSpan"></span>
+        <form method="GET" action="" id="add-labels-form">
+            <div id="labelInputSpan" class="labels-input">
+                <div id="labelOperationErrorContainer" class="hidden">
+                    <span class="error"><span class="errorMessage" id="labelOperationErrorMessage"></span></span>
+                </div>
+
+                <div class="caption">Enter labels to add to this page:</div>
+                <div id="label-input-fields">
+                    <input autocomplete="off" id="labelsString" name="labelsString" value="" size="40">
+                    <input id="add-labels-editor-button" type="submit" class="add-labels" value="Add">
+                    <input id="close-labels-editor-button" type="submit" class="hide-labels-editor" value="Done">
+                </div>
+                <div id="waitImageAndStatus">
+                    <img class="waiting" alt="Please wait" src="/confluence/s/2042/9/_/images/icons/wait.gif">&nbsp;
+                    <span id="labelOperationStatus" class="smalltext"></span>
+                </div>
+                <div id="labelsAutocompleteList" class="aui-dd-parent"></div>
+                <div class="labels-tip">
+                    <div id="suggestedLabelsSpan"></div>
+                    Looking for a label? Just start typing.
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+            
+            
+
+
+
+
+            
+    
+
+        
+<fieldset class="parameters hidden">
+    <input type="hidden" id="deleteCommentConfirmMessage" value="Are you sure you want to remove the comment?">
+    <input type="hidden" id="collapseTooltip" value="Click to toggle the display of this comment.">
+        </fieldset>
+
+<fieldset class="hidden parameters i18n">
+        <input type="hidden" title="i18n.cancel.name" value="Cancel">
+</fieldset>
+
+
+
+
+
+
+<div id="comments-section" class="pageSection">
+    
+    
+    
+    
+                                    <p class="noprint">
+                <a href="/confluence/display/KAFKA/Writing+a+Driver+for+Kafka?showComments=true&amp;showCommentArea=true#addcomment" id="add-comment-bottom" accesskey="m">Add Comment</a>
+            </p>
+                        </div>
+
+
+            
+</div>
+
+
+    
+
+
+
+
+    
+    
+
+    
+    
+    
+
+
+<fieldset class="hidden parameters">
+        <input type="hidden" title="i18n.done.name" value="Done">
+        <input type="hidden" title="i18n.manage.watchers.dialog.title" value="Manage Watchers">
+        <input type="hidden" title="i18n.manage.watchers.unable.to.remove.error" value="Failed to remove watcher. Refresh page to see latest status.">
+        <input type="hidden" title="i18n.manage.watchers.status.adding.watcher" value="Adding watcher&amp;hellip;">
+</fieldset>
+<script type="text/x-template" title="manage-watchers-dialog">
+<div class="dialog-content">
+    <div class="column page-watchers">
+        <h3>Watching this page</h3>
+        <p class="description">These people are notified when the page is changed. You can add or remove people from this list.</p>
+        <form action="/confluence/json/addwatch.action" method="POST">
+                <input type="hidden" name="atl_token" value="015c45c1a14009fe452753938034156bf1f49b1b">
+            <input type="hidden" name="pageId" value="27832416"/>
+            <input type="hidden" id="add-watcher-username" name="username" value=""/>
+            <label for="add-watcher-user">User</label>
+            <input id="add-watcher-user" name="userFullName" type="search" class="autocomplete-user"
+               value="" placeholder="Full name or username" autocomplete="off"
+               data-max="10" data-target="#add-watcher-username" data-dropdown-target="#add-watcher-dropdown"
+               data-template="{title}" data-none-message="No matching users found.">
+            <input id="add-watcher-submit" type="submit" name="add" value="Add">
+            <div id="add-watcher-dropdown" class="aui-dd-parent autocomplete"></div>
+            <div class="status hidden"></div>
+        </form>
+        <ul class="user-list">
+            <li class="loading">Loading&hellip;</li>
+            <li class="no-users hidden">No page watchers</li>
+        </ul>
+    </div>
+    <div class="column space-watchers">
+        <h3>Watching this space</h3>
+        <p class="description">These people are notified when any content in the space is changed. You cannot modify this list.</p>
+        <ul class="user-list">
+            <li class="loading">Loading&hellip;</li>
+            <li class="no-users hidden">No space watchers</li>
+        </ul>
+    </div>
+</div>
+</script>
+<script type="text/x-template" title="manage-watchers-user">
+    <li class="watch-user">
+        <img class="profile-picture confluence-userlink" src="{iconUrl}" data-username="{username}">
+        <a class="confluence-userlink" href="{url}" data-username="{username}">{fullName} <span class="username">({username})</span></a>
+        <span class="remove-watch" title="Remove"
+            data-username="{username}">Remove</span>
+    </li>
+</script>
+<script type="text/x-template" title="manage-watchers-help-link">
+    <div class="dialog-help-link">
+            <a href="http://docs.atlassian.com/confluence/docs-34/Managing+Watchers" target="_blank">Help</a>
+    </div>
+</script>
+    <br class="clear">
+</div><!-- \#main -->
+
+<div id="footer">
+                                                <p class="license license-opensource">
+                  Powered by a free <b>Atlassian Confluence Open Source Project License</b> granted to Apache Software Foundation. <a href="http://www.atlassian.com/c/conf/11461">Evaluate Confluence today</a>.<br>
+                </p>
+                        
+    <ul id="poweredby">
+        <li class="noprint">Powered by <a href="http://www.atlassian.com/software/confluence" class="hover-footer-link">Atlassian Confluence</a> 3.4.9, the <a href="http://www.atlassian.com/software/confluence/tour/enterprise-wiki.jsp" class="hover-footer-link">Enterprise Wiki</a></li>
+        <li class="print-only">Printed by Atlassian Confluence 3.4.9, the Enterprise Wiki.</li>        
+        <li class="noprint"> &nbsp; |&nbsp; <a href="http://jira.atlassian.com/secure/BrowseProject.jspa?id=10470" class="hover-footer-link">Report a bug</a></li>
+        <li class="noprint"> &nbsp;|&nbsp; <a href="http://www.atlassian.com/about/connected.jsp?s_kwcid=Confluence-stayintouch" class="hover-footer-link">Atlassian News</a></li>
+    </ul>
+
+    
+
+            
+    </div></div><!-- \#full-height-container -->
+</div><!-- \#page -->
+</body>
+</html>
