@@ -16,12 +16,14 @@ import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck.Monadic
 import Specs.IntegrationHelper
 import Specs.Kafka.KeepAlive
+import Specs.Kafka.ParsingSpecs
 import Control.Concurrent(forkIO)
 import Data.Serialize.Put
 import Network.Socket(sClose, sIsConnected)
 import Kafka.Network
 import Control.Monad
 import System.Timeout
+import Specs.Kafka.Arbitrary
 
 main :: IO ()
 main = hspec $
@@ -119,23 +121,6 @@ recordMatching c original r = do
               putMVar r message
               killCurrent
 
-messageProperties :: Spec
-messageProperties = describe "the client" $ do
-  prop "serialize -> deserialize is id" $
-    \message -> parseMessage (putMessage message) == message
-
-  prop "serialized message length is 1 + 4 + n" $
-    \message@(Message raw) -> parseMessageSize 0 (putMessage message) == 1 + 4 + B.length raw
-
-parsingErrorCode :: Spec
-parsingErrorCode = describe "the client" $
-  it "parses an error code" $ do
-    let b = putErrorCode 4
-    parseErrorCode b @?= InvalidFetchSize
-
-putErrorCode :: Int -> B.ByteString
-putErrorCode code = runPut $ putWord16be $ fromIntegral code
-
 reconnectingToClosedSocket :: Spec
 reconnectingToClosedSocket = describe "reconnectSocket" $
   it "reconnects a closed socket" $ do
@@ -144,30 +129,6 @@ reconnectingToClosedSocket = describe "reconnectSocket" $
     s2 <- reconnectSocket s
     c <- sIsConnected s2
     c @?= True
-
-instance Arbitrary Partition where
-  arbitrary = do
-    a <- elements [0..5]
-    return $ Partition a
-
-instance Arbitrary Topic where
-  arbitrary = do
-    a <- nonEmptyString
-    return $ Topic $ B.pack a
-
-instance Arbitrary Stream where
-  arbitrary = do
-    t <- arbitrary
-    p <- arbitrary
-    return $! Stream t p
-
-instance Arbitrary Message where
-  arbitrary = do
-    a <- nonEmptyString
-    return $ Message (B.pack a)
-
-nonEmptyString :: Gen String
-nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 
 -- higher level api? typeclasses for Produceable, Consumeable?
 -- put the basic consumer in Kafka.Consumer.Basic
