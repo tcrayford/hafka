@@ -127,7 +127,7 @@ parseMessageSet' a messages processed totalLength settings
         newProcessed = processed + 4 + messageSize
 
 parseMessageSize :: Int -> ByteString -> Int
-parseMessageSize processed raw = fromIntegral $ forceEither raw $ runGet' raw $ do
+parseMessageSize processed raw = fromIntegral $ forceEither "parseMessageSize" $ runGet' raw $ do
                                                 skip processed
                                                 getWord32be
 
@@ -135,7 +135,7 @@ bSplice :: ByteString -> Int -> Int -> ByteString
 bSplice a start end = B.take end (B.drop start a)
 
 parseMessage :: ByteString -> Message
-parseMessage raw = Message $ forceEither raw $ runGet' raw $ do
+parseMessage raw = Message $ forceEither "parseMessage" $ runGet' raw $ do
   size <- getWord32be
   _ <- getWord8
   _ <- getWord32be

@@ -5,7 +5,7 @@ import Kafka.Parsing
 import Data.ByteString.Char8(ByteString)
 
 parseErrorCode :: ByteString -> ErrorCode
-parseErrorCode raw = forceEither raw $ runGet' raw $ do
+parseErrorCode raw = forceEither "parseErrorCode" $ runGet' raw $ do
   c <- getWord16be
   return $! lookupErrorCode c
 

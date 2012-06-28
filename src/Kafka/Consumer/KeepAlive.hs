@@ -43,11 +43,7 @@ parseConsumption result newC f = do
       return ([], newC)
 
 withSocket :: KeepAliveConsumer -> (Socket -> IO a) -> IO a
-withSocket c f = do
-  s <- takeMVar $ kaSocket c
-  r <- f s
-  putMVar (kaSocket c) s
-  return $! r
+withSocket c f = withMVar (kaSocket c) f
 
 withReconnected :: KeepAliveConsumer -> IO KeepAliveConsumer
 withReconnected c = do

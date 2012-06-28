@@ -20,6 +20,7 @@ import Control.Monad(when)
 import Data.Serialize.Put
 import Network.Socket(sClose, sIsConnected)
 import Kafka.Network
+import Control.Monad
 
 main :: IO ()
 main = hspec $
@@ -83,7 +84,6 @@ keepAliveReconectsToClosedSockets stream message = monadicIO $ do
       run $ produce testProducer [message]
 
       run $ waitFor result ("timed out waiting for " ++ show message ++ " to be delivered")
-
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
 recordMatching c original r = do
