@@ -14,6 +14,7 @@ main() {
   kill -9 $pid
   (cd kafka/kafka && bin/kafka-server-stop.sh)
   wait_for_server_stop
+  script/clean-build
   open src/hpc_index.html
 }
 

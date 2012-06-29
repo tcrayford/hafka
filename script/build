@@ -1,0 +1,3 @@
+#!/bin/bash
+
+(cd src && ghc --make Main.hs -threaded -O2 -rtsopts -o SpecRunner)
