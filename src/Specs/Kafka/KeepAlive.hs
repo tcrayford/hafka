@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Specs.Kafka.KeepAlive where
 import Kafka.Consumer
-import Kafka.Consumer.BasicConsumer
+import Kafka.Consumer.Basic
 import Kafka.Consumer.KeepAlive
 import Kafka.Types
 import Test.HUnit

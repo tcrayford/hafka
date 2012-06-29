@@ -1,4 +1,4 @@
-module Kafka.Consumer.BasicConsumer where
+module Kafka.Consumer.Basic where
 import Kafka.Consumer
 import Control.Concurrent(threadDelay)
 import Data.ByteString.Char8(ByteString)

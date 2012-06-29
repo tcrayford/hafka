@@ -1,7 +1,7 @@
 module Specs.IntegrationHelper where
 import Kafka.Producer
 import Kafka.Consumer
-import Kafka.Consumer.BasicConsumer
+import Kafka.Consumer.Basic
 import Kafka.Types
 import Control.Concurrent.MVar
 import System.Timeout
