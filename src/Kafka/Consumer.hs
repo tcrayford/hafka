@@ -12,30 +12,11 @@ import Network
 import System.IO
 import qualified Data.ByteString.Char8 as B
 
-data BasicConsumer = BasicConsumer {
-    cStream :: Stream
-  , cOffset :: Offset
-  }
-
 class Consumer c where
   consume :: c -> IO ([Message], c)
   getOffset :: c -> Offset
   getStream :: c -> Stream
   increaseOffsetBy :: c -> Int -> c
-
-instance Consumer BasicConsumer where
-  consume c = do
-    result <- getFetchData c
-    case result of
-      (Right r) -> return $! parseMessageSet r c
-      (Left r) -> do 
-        print ("error parsing response: " ++ show r)
-        return ([], c)
-  getOffset (BasicConsumer _ o) = o
-  getStream (BasicConsumer s _) = s
-  increaseOffsetBy settings increment = settings { cOffset = newOffset }
-    where newOffset = Offset (current + increment)
-          (Offset current) = cOffset settings
 
 consumeLoop :: (Consumer c) => c -> (Message -> IO b) -> IO ()
 consumeLoop a f = do
@@ -43,15 +24,6 @@ consumeLoop a f = do
   mapM_ f messages
   threadDelay 2000
   consumeLoop newSettings f
-
-getFetchData :: (Consumer c) => c -> IO Response
-getFetchData a = do
-  h <- connectTo "localhost" $ PortNumber 9092
-  B.hPut h $ consumeRequest a
-  hFlush h
-  res <- readDataResponse (handleByteReader h) dropErrorCode
-  hClose h
-  return res
 
 consumeRequest :: (Consumer c) => c -> ByteString
 consumeRequest a = runPut $ do

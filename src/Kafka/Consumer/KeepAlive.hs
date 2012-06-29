@@ -3,6 +3,7 @@ import Control.Concurrent.MVar
 import Data.ByteString.Char8(ByteString)
 import Kafka.Consumer
 import Kafka.Consumer.ByteReader
+import Kafka.Consumer.BasicConsumer
 import Kafka.Network
 import Kafka.Types
 import Network.Socket hiding (send, sendTo, recv, recvFrom)

@@ -1,11 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Specs.Kafka.KeepAlive where
-import Test.Hspec.Monadic
-import Test.Hspec.HUnit()
-import Test.HUnit
 import Kafka.Consumer
+import Kafka.Consumer.BasicConsumer
 import Kafka.Consumer.KeepAlive
 import Kafka.Types
+import Test.HUnit
+import Test.Hspec.HUnit()
+import Test.Hspec.Monadic
 
 parseConsumptionTest :: Spec
 parseConsumptionTest = describe "parseConsumption" $ do
