@@ -64,6 +64,11 @@ connectToKafka = connectTo "localhost" $ PortNumber 9092
 
 type RawConsumeResponseHandler = (ErrorCode -> ByteString -> IO (Either ErrorCode ByteString))
 
+type ByteReader = (Int -> IO ByteString)
+
+socketByteReader :: Socket -> Int -> IO ByteString
+socketByteReader = recvFrom'
+
 readDataResponse' :: Socket -> RawConsumeResponseHandler  -> IO (Either ErrorCode ByteString)
 readDataResponse' s handler = do
   d <- recvFrom' s 4
