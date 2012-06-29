@@ -1,15 +1,16 @@
 module Kafka.Consumer.KeepAlive where
+import Control.Concurrent.MVar
+import Data.ByteString.Char8(ByteString)
+import Data.Serialize.Get
 import Kafka.Consumer
+import Kafka.Consumer.ByteReader
+import Kafka.Network
 import Kafka.Parsing
 import Kafka.Response
 import Kafka.Types
-import Kafka.Network
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
 import qualified Data.ByteString.Char8 as B
-import Data.ByteString.Char8(ByteString)
-import Data.Serialize.Get
-import Control.Concurrent.MVar
 
 data KeepAliveConsumer = KeepAliveConsumer {
     kaConsumer :: BasicConsumer
@@ -21,7 +22,7 @@ instance Consumer KeepAliveConsumer where
     newC <- withReconnected c
     result <- withSocket newC (\s -> do
         _ <- send s $ consumeRequest newC
-        readDataResponse' s dropErrorCode
+        readDataResponse (socketByteReader s) dropErrorCode
       )
     parseConsumption result newC parseMessageSet
 
@@ -62,34 +63,8 @@ reconnectSocket s = do
 connectToKafka :: IO Socket
 connectToKafka = connectTo "localhost" $ PortNumber 9092
 
-type RawConsumeResponseHandler = (ErrorCode -> ByteString -> IO (Either ErrorCode ByteString))
-
-type ByteReader = (Int -> IO ByteString)
-
-socketByteReader :: Socket -> Int -> IO ByteString
-socketByteReader = recvFrom'
-
-readDataResponse' :: Socket -> RawConsumeResponseHandler  -> IO (Either ErrorCode ByteString)
-readDataResponse' s handler = do
-  d <- recvFrom' s 4
-
-  let dataLength = getDataLength' d
-  rawResponse <- recvFrom' s dataLength
-  let x = parseErrorCode rawResponse
-  handler x rawResponse
-
 getDataLength' :: ByteString -> Int
 getDataLength' d = forceEither "getDataLength'" $ runGet getDataLength d
-
-dropErrorCode :: RawConsumeResponseHandler
-dropErrorCode x rawResponse = case x of
-    Success -> return $! Right $ B.drop 2 rawResponse
-    e -> return $! Left e
-
-recvFrom' :: Socket -> Int -> IO ByteString
-recvFrom' s n = do 
-  (d, _) <- recvFrom s n
-  return d
 
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do

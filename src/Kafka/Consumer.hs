@@ -1,15 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Kafka.Consumer where
-import Kafka.Types
+import Control.Concurrent(threadDelay)
+import Data.ByteString.Char8(ByteString)
+import Data.Serialize.Get
+import Data.Serialize.Put
+import Kafka.Consumer.ByteReader
 import Kafka.Parsing
 import Kafka.Response
+import Kafka.Types
 import Network
-import Data.ByteString.Char8(ByteString)
-import qualified Data.ByteString.Char8 as B
 import System.IO
-import Data.Serialize.Put
-import Data.Serialize.Get
-import Control.Concurrent(threadDelay)
+import qualified Data.ByteString.Char8 as B
 
 data BasicConsumer = BasicConsumer {
     cStream :: Stream
@@ -48,7 +49,7 @@ getFetchData a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
   hFlush h
-  res <- readDataResponse h
+  res <- readDataResponse (handleByteReader h) dropErrorCode
   hClose h
   return res
 
@@ -97,15 +98,21 @@ putOffset c = putWord64be $ fromIntegral offset
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB
 
-readDataResponse :: Handle -> IO (Either ErrorCode ByteString)
-readDataResponse h = do
-  rawLength <- B.hGet h 4
+type RawConsumeResponseHandler = (ErrorCode -> ByteString -> IO (Either ErrorCode ByteString))
+
+readDataResponse :: ByteReader -> RawConsumeResponseHandler -> IO (Either ErrorCode ByteString)
+readDataResponse h handler = do
+  rawLength <- h 4
   let (Right dataLength) = runGet getDataLength rawLength
-  rawResponse <- B.hGet h dataLength
+  rawResponse <- h dataLength
   let x = parseErrorCode rawResponse
-  case x of
+  handler x rawResponse
+
+dropErrorCode :: RawConsumeResponseHandler
+dropErrorCode x rawResponse = case x of
     Success -> return $! Right $ B.drop 2 rawResponse
     e -> return $! Left e
+
 
 getDataLength :: Get Int
 getDataLength = do
