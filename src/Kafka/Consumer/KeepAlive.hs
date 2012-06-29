@@ -32,7 +32,6 @@ instance Consumer KeepAliveConsumer where
   increaseOffsetBy c n = c { kaConsumer = newC }
     where newC = increaseOffsetBy (kaConsumer c) n
 
-type Response = Either ErrorCode ByteString
 type MessageSetParser = (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer))
 
 parseConsumption :: Response -> KeepAliveConsumer -> MessageSetParser -> IO ([Message], KeepAliveConsumer)

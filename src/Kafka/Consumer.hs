@@ -44,7 +44,7 @@ consumeLoop a f = do
   threadDelay 2000
   consumeLoop newSettings f
 
-getFetchData :: (Consumer c) => c -> IO (Either ErrorCode ByteString)
+getFetchData :: (Consumer c) => c -> IO Response
 getFetchData a = do
   h <- connectTo "localhost" $ PortNumber 9092
   B.hPut h $ consumeRequest a
@@ -98,15 +98,17 @@ putOffset c = putWord64be $ fromIntegral offset
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB
 
-type RawConsumeResponseHandler = (ErrorCode -> ByteString -> IO (Either ErrorCode ByteString))
+type RawConsumeResponseHandler = (ErrorCode -> ByteString -> IO Response)
 
-readDataResponse :: ByteReader -> RawConsumeResponseHandler -> IO (Either ErrorCode ByteString)
+readDataResponse :: ByteReader -> RawConsumeResponseHandler -> IO Response
 readDataResponse h handler = do
   rawLength <- h 4
   let (Right dataLength) = runGet getDataLength rawLength
   rawResponse <- h dataLength
   let x = parseErrorCode rawResponse
   handler x rawResponse
+
+type Response = Either ErrorCode ByteString
 
 dropErrorCode :: RawConsumeResponseHandler
 dropErrorCode x rawResponse = case x of
