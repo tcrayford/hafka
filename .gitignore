@@ -1,3 +1,6 @@
 *.o
 *.hi
 src/perf
+src/*.html
+.hpc
+*.tix
