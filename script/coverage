@@ -1,0 +1,41 @@
+#!/bin/bash
+
+start_server() {
+    cd kafka/kafka
+    bin/kafka-server-start.sh config/server.properties > /dev/null 2>&1 &
+}
+
+wait_for_server() {
+    while true; do
+        lsof -i :9092 > /dev/null
+        if [[ $? == 0 ]]; then
+            break
+        fi
+    done
+}
+
+wait_for_server_stop() {
+    while true; do
+        lsof -i :9092 > /dev/null
+        if [[ $? != 0 ]]; then
+            break
+        fi
+    done
+}
+
+main() {
+  (cd /tmp/kafka-logs && ls | xargs rm -r)
+  (start_server)
+  wait_for_server
+  pid=$(echo "`lsof -i :9092 | tail -1 | cut -d ' ' -f 5`")
+  (cd src &&
+    ghc --make Main.hs -fforce-recomp -fhpc -o SpecRunner && ./SpecRunner)
+  (cd src &&
+    hpc markup SpecRunner)
+  kill -9 $pid
+  (cd kafka/kafka && bin/kafka-server-stop.sh)
+  wait_for_server_stop
+  open src/hpc_index.html
+}
+
+main
