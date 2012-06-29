@@ -5,22 +5,20 @@ import Kafka.Consumer
 import Kafka.Consumer.KeepAlive
 import Kafka.Types
 import Control.Concurrent.MVar
-import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck.Monadic
 import Specs.IntegrationHelper
-import Control.Concurrent(forkIO, threadDelay)
-import Network.Socket(sClose, sIsConnected)
+import Network.Socket(sClose)
 import Control.Monad
 import System.Timeout
 
-keepAliveReconectsToClosedSockets :: Int -> Stream -> Message -> Property
-keepAliveReconectsToClosedSockets n stream message = monadicIO $ do
+keepAliveReconectsToClosedSockets :: Stream -> Message -> Property
+keepAliveReconectsToClosedSockets stream message = monadicIO $ do
       let (testProducer, testConsumer) = coupledProducerConsumer stream
       result <- run newEmptyMVar
       c <- run (keepAlive testConsumer)
 
       run $ recordMatching c message result
-      run $ killSocketAfter (abs n) c
+      run $ killSocket c
       run $ produce testProducer [message]
 
       run $ waitFor result message (killSocket c)
@@ -37,8 +35,7 @@ keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
       run $ waitFor result m2 (return ())
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
-recordMatching c original r = do
-  forkIO' $ consumeLoop c go
+recordMatching c original r = forkIO' $ consumeLoop c go
   where
     go :: Message -> IO ()
     go message = when (original == message) $ finish message
@@ -46,11 +43,6 @@ recordMatching c original r = do
     finish message = do
               putMVar r message
               killCurrent
-
-killSocketAfter :: Int -> KeepAliveConsumer -> IO ()
-killSocketAfter n c = forkIO' $ do
-  threadDelay n
-  killSocket c
 
 killSocket :: KeepAliveConsumer -> IO ()
 killSocket c = do

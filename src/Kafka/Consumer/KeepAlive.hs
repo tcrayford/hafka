@@ -6,13 +6,10 @@ import Kafka.Types
 import Kafka.Network
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
-import System.IO
 import qualified Data.ByteString.Char8 as B
 import Data.ByteString.Char8(ByteString)
 import Data.Serialize.Get
 import Control.Concurrent.MVar
-import Control.Monad(liftM)
-import Debug.Trace
 
 data KeepAliveConsumer = KeepAliveConsumer {
     kaConsumer :: BasicConsumer
@@ -23,8 +20,8 @@ instance Consumer KeepAliveConsumer where
   consume c = do
     newC <- withReconnected c
     result <- withSocket newC (\s -> do
-        send s $ consumeRequest newC
-        readDataResponse' s
+        _ <- send s $ consumeRequest newC
+        readDataResponse' s dropErrorCode
       )
     parseConsumption result newC parseMessageSet
 
@@ -34,7 +31,10 @@ instance Consumer KeepAliveConsumer where
   increaseOffsetBy c n = c { kaConsumer = newC }
     where newC = increaseOffsetBy (kaConsumer c) n
 
-parseConsumption :: Either ErrorCode ByteString -> KeepAliveConsumer -> (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer)) -> IO ([Message], KeepAliveConsumer)
+type Response = Either ErrorCode ByteString
+type MessageSetParser = (ByteString -> KeepAliveConsumer -> ([Message], KeepAliveConsumer))
+
+parseConsumption :: Response -> KeepAliveConsumer -> MessageSetParser -> IO ([Message], KeepAliveConsumer)
 parseConsumption result newC f = case result of
     (Right r) -> return $! f r newC
     (Left r) -> do
@@ -62,13 +62,22 @@ reconnectSocket s = do
 connectToKafka :: IO Socket
 connectToKafka = connectTo "localhost" $ PortNumber 9092
 
-readDataResponse' :: Socket -> IO (Either ErrorCode ByteString)
-readDataResponse' s = do
+type RawConsumeResponseHandler = (ErrorCode -> ByteString -> IO (Either ErrorCode ByteString))
+
+readDataResponse' :: Socket -> RawConsumeResponseHandler  -> IO (Either ErrorCode ByteString)
+readDataResponse' s handler = do
   d <- recvFrom' s 4
-  let (Right dataLength) = runGet getDataLength d
+
+  let dataLength = getDataLength' d
   rawResponse <- recvFrom' s dataLength
   let x = parseErrorCode rawResponse
-  case x of
+  handler x rawResponse
+
+getDataLength' :: ByteString -> Int
+getDataLength' d = forceEither "getDataLength'" $ runGet getDataLength d
+
+dropErrorCode :: RawConsumeResponseHandler
+dropErrorCode x rawResponse = case x of
     Success -> return $! Right $ B.drop 2 rawResponse
     e -> return $! Left e
 

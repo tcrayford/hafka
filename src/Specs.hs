@@ -8,7 +8,7 @@ import Kafka.Producer
 import Kafka.Types
 import Network.Socket(sClose, sIsConnected)
 import Specs.IntegrationHelper
-import Specs.Kafka.Arbitrary
+import Specs.Kafka.Arbitrary()
 import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import Specs.Kafka.KeepAlive
 import Specs.Kafka.ParsingSpecs
