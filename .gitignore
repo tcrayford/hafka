@@ -4,3 +4,4 @@ src/perf
 src/*.html
 .hpc
 *.tix
+src/SpecRunner
