@@ -1,16 +1,12 @@
 module Kafka.Consumer.KeepAlive where
 import Control.Concurrent.MVar
 import Data.ByteString.Char8(ByteString)
-import Data.Serialize.Get
 import Kafka.Consumer
 import Kafka.Consumer.ByteReader
 import Kafka.Network
-import Kafka.Parsing
-import Kafka.Response
 import Kafka.Types
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
-import qualified Data.ByteString.Char8 as B
 
 data KeepAliveConsumer = KeepAliveConsumer {
     kaConsumer :: BasicConsumer
@@ -61,9 +57,6 @@ reconnectSocket s = do
 
 connectToKafka :: IO Socket
 connectToKafka = connectTo "localhost" $ PortNumber 9092
-
-getDataLength' :: ByteString -> Int
-getDataLength' d = forceEither "getDataLength'" $ runGet getDataLength d
 
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do

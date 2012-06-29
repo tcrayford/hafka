@@ -115,7 +115,6 @@ dropErrorCode x rawResponse = case x of
     Success -> return $! Right $ B.drop 2 rawResponse
     e -> return $! Left e
 
-
 getDataLength :: Get Int
 getDataLength = do
   raw <- getWord32be
