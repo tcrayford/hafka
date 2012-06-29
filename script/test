@@ -29,7 +29,7 @@ main () {
   wait_for_server
   pid=$(echo "`lsof -i :9092 | tail -1 | cut -d ' ' -f 5`")
   (cd src &&
-    ghc --make Main.hs -o -threaded -fforce-recomp -O2 -rtsopts -o SpecRunner && ./SpecRunner +RTS -N4)
+    ghc --make Main.hs -threaded -O2 -rtsopts -o SpecRunner && ./SpecRunner +RTS -N4)
   kill -9 $pid
   (cd kafka/kafka && bin/kafka-server-stop.sh)
   wait_for_server_stop
