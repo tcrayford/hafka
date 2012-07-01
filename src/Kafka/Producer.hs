@@ -10,12 +10,15 @@ import System.IO
 
 data ProducerSettings = ProducerSettings Stream
 
-produce :: ProducerSettings -> [Message] -> IO ()
-produce settings messages = do
-  h <- connectTo "localhost" $ PortNumber 9092
-  B.hPut h $ fullProduceRequest settings messages
-  hFlush h
-  hClose h
+class Producer a where
+  produce :: a -> [Message] -> IO ()
+
+instance Producer ProducerSettings where
+  produce settings messages = do
+    h <- connectTo "localhost" $ PortNumber 9092
+    B.hPut h $ fullProduceRequest settings messages
+    hFlush h
+    hClose h
 
 fullProduceRequest :: ProducerSettings -> [Message] -> ByteString
 fullProduceRequest settings messages = runPut $ do
