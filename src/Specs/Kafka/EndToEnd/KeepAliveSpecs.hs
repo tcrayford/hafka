@@ -55,16 +55,6 @@ keepAliveConsumesMultipleMessages = it "consumes multiple messages" $ do
 
       waitFor result m2 (return ())
 
-recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
-recordMatching c original r = forkIO' $ consumeLoop c go
-  where
-    go :: Message -> IO ()
-    go message = when (original == message) $ finish message
-    finish :: Message -> IO ()
-    finish message = do
-              putMVar r message
-              killCurrent
-
 killSocket :: KeepAliveConsumer -> IO ()
 killSocket c = do
   r <- timeout 100000 $ takeMVar (kaSocket c)

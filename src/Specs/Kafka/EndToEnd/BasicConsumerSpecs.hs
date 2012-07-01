@@ -2,7 +2,6 @@ module Specs.Kafka.EndToEnd.BasicConsumerSpecs where
 import Control.Concurrent.MVar
 import Kafka.Producer
 import Kafka.Types
-import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import Specs.IntegrationHelper
 import Test.Hspec.Monadic
 import Test.QuickCheck
