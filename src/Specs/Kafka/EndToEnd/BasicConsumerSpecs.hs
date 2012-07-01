@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Specs.Kafka.EndToEnd.BasicConsumerSpecs where
 import Control.Concurrent.MVar
 import Kafka.Producer
@@ -6,6 +7,8 @@ import Specs.IntegrationHelper
 import Test.Hspec.Monadic
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
+import Test.HUnit
+import Test.Hspec.Monadic
 
 produceToConsume :: Stream -> Message -> Property
 produceToConsume stream message = monadicIO $ do
@@ -17,13 +20,15 @@ produceToConsume stream message = monadicIO $ do
 
       run $ waitFor result message (return ())
 
-deliversWhenProducingMultipleMessages :: Stream -> Message -> Message -> Property
-deliversWhenProducingMultipleMessages stream m1 m2 = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
+deliversWhenProducingMultipleMessages :: Spec
+deliversWhenProducingMultipleMessages = it "delivers multiple messages" $ do
+      let stream = Stream (Topic "basic_consumer_delivers_multiple_messages") (Partition 0)
+          (testProducer, testConsumer) = coupledProducerConsumer stream
+          (m1, m2) = (Message "m1", Message "m2")
+      result <- newEmptyMVar
 
-      run $ produce testProducer [m1, m2]
-      run $ recordMatching testConsumer m2 result
+      produce testProducer [m1, m2]
+      recordMatching testConsumer m2 result
 
-      run $ waitFor result m2 (return ())
+      waitFor result m2 (return ())
 

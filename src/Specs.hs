@@ -32,8 +32,9 @@ integrationTests :: Spec
 integrationTests =
   describe "the integrated producer -> consumer loop" $ do
     describe "basic consumer" $ do
+      deliversWhenProducingMultipleMessages
       prop "can pop and push a message" produceToConsume
-      prop "can produce multiple messages" deliversWhenProducingMultipleMessages
+
     describe "keep alive consumer" $ do
       keepAliveReconectsToClosedSockets
       keepAliveConsumesMultipleMessages 
