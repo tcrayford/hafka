@@ -8,8 +8,8 @@ import Kafka.Types
 import Specs.IntegrationHelper
 import Specs.Kafka.Arbitrary()
 import Specs.Kafka.EndToEnd.BasicConsumerSpecs
-import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
+import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import Specs.Kafka.KeepAlive
 import Specs.Kafka.ParsingSpecs
 import Specs.Kafka.Unit.ConsumerSpecs
@@ -18,6 +18,7 @@ import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
+import qualified Bench.Benchmarks as Bench
 
 main :: IO ()
 main = hspec $
@@ -27,6 +28,7 @@ main = hspec $
     parseConsumptionTest
     consumerSpecs
     messageProperties
+    benchSpecs
     integrationTests
 
 integrationTests :: Spec
@@ -43,6 +45,12 @@ integrationTests =
 
     describe "keep alive producer" $
       prop "can produce with keep alive" keepAliveProducerProduces
+
+benchSpecs = describe "the benchmarks" $ do
+  it "roundtripBasicConsumer" Bench.roundtripBasicConsumer
+  it "roundtripKeepAliveConsumer" Bench.roundtripKeepAliveConsumer
+  it "roundtripBasicProducer" Bench.roundtripBasicProducer
+  it "roundtripKeepAliveProducer" Bench.roundtripKeepAliveProducer
 
 -- higher level api? typeclasses for Produceable, Consumeable?
 -- put the basic consumer in Kafka.Consumer.Basic

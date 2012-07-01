@@ -33,14 +33,28 @@ consume100() {
 
 roundtripBasicConsumer() {
   (start_server)
-  result=$(echo "`(cd src && ./perf roundtrip/roundtripBasicConsumer | find_mean)`")
+  result=$(echo "`(cd src && ./perf consumerRoundTrip/roundtripBasicConsumer | find_mean)`")
   kill_server
   echo "$result"
 }
 
 roundtripKeepAliveConsumer() {
   (start_server)
-  result=$(echo "`(cd src && ./perf roundtrip/roundtripKeepAliveConsumer | find_mean)`")
+  result=$(echo "`(cd src && ./perf consumerRoundTrip/roundtripKeepAliveConsumer | find_mean)`")
+  kill_server
+  echo "$result"
+}
+
+roundtripBasicProducer() {
+  (start_server)
+  result=$(echo "`(cd src && ./perf producerRoundTrip/roundtripBasicProducer | find_mean)`")
+  kill_server
+  echo "$result"
+}
+
+roundtripKeepAliveProducer() {
+  (start_server)
+  result=$(echo "`(cd src && ./perf producerRoundTrip/roundtripKeepAliveProducer | find_mean)`")
   kill_server
   echo "$result"
 }
@@ -48,5 +62,5 @@ roundtripKeepAliveConsumer() {
 # Get the hash
 hash="`git log -1 --pretty=%h`"
 
-echo "hash, produce-10-mean, produce-100-mean, consume-10-mean, consume-100-mean, roundtripBasicConsumer-mean, roundtripKeepAliveConsumer-mean"
-echo "$hash,`produce10`,`produce100`,`consume10`,`consume100`,`roundtripBasicConsumer`, `roundtripKeepAliveConsumer`"
+echo "hash, produce-10-mean, produce-100-mean, consume-10-mean, consume-100-mean, roundtripBasicConsumer-mean, roundtripKeepAliveConsumer-mean, roundtripBasicProducer-mean, roundtripKeepAliveProducer-mean"
+echo "$hash,`produce10`,`produce100`,`consume10`,`consume100`,`roundtripBasicConsumer`, `roundtripKeepAliveConsumer`, `roundtripBasicProducer`, `roundtripKeepAliveProducer`"
