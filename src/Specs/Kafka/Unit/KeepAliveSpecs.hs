@@ -4,13 +4,13 @@ import Test.Hspec.HUnit
 import Test.HUnit
 import Kafka.Network
 import Kafka.Consumer.KeepAlive
-import Network.Socket(sClose, sIsConnected)
+import System.IO
 
 reconnectingToClosedSocket :: Spec
 reconnectingToClosedSocket = describe "reconnectSocket" $
   it "reconnects a closed socket" $ do
-    s <- connectTo "localhost" $ PortNumber 9092
-    sClose s
-    s2 <- reconnectSocket s
-    c <- sIsConnected s2
+    h <- connectTo "localhost" $ PortNumber 9092
+    hClose h
+    h2 <- reconnectSocket h
+    c <- hIsOpen h2
     c @?= True

@@ -6,8 +6,8 @@ import Kafka.Consumer
 import Kafka.Producer
 import Kafka.Producer.KeepAlive
 import Kafka.Types
-import Network.Socket(sClose, sIsConnected)
 import Specs.IntegrationHelper
+import System.IO
 import System.Timeout
 import Test.HUnit
 import Test.Hspec.Monadic
@@ -45,8 +45,8 @@ killSocket' :: KeepAliveProducer -> IO ()
 killSocket' p = do
   r <- timeout 100000 $ takeMVar (kapSocket p)
   case r of
-    (Just s) -> do
-      sClose s
-      putMVar (kapSocket p) s
+    (Just h) -> do
+      hClose h
+      putMVar (kapSocket p) h
     Nothing -> error "timed out whilst trying to kill the socket"
 

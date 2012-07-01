@@ -1,26 +1,27 @@
 module Kafka.Producer.KeepAlive where
-import Network.Socket hiding (send, sendTo, recv, recvFrom)
-import Network.Socket.ByteString
 import Kafka.Producer
 import Kafka.Network
 import Control.Concurrent.MVar
+import System.IO
+import qualified Data.ByteString.Char8 as B
 
 data KeepAliveProducer = KeepAliveProducer {
-      kapSocket :: MVar Socket
+      kapSocket :: MVar Handle
     , kapSettings :: ProducerSettings
   }
 
 instance Producer KeepAliveProducer where
   produce p messages = do
     newP <- maybeReconnect p
-    s <- takeMVar (kapSocket newP)
-    send s $ fullProduceRequest (kapSettings newP) messages
-    putMVar (kapSocket newP) s
+    h <- takeMVar (kapSocket newP)
+    B.hPut h $ fullProduceRequest (kapSettings newP) messages
+    hFlush h
+    putMVar (kapSocket newP) h
 
 maybeReconnect :: KeepAliveProducer -> IO KeepAliveProducer
 maybeReconnect p = do
   s <- takeMVar (kapSocket p)
-  isConnected <- sIsConnected s
+  isConnected <- hIsOpen s
   if isConnected then do
       putMVar (kapSocket p) s
       return $! p

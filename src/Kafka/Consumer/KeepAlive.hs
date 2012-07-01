@@ -1,25 +1,26 @@
 module Kafka.Consumer.KeepAlive where
 import Control.Concurrent.MVar
 import Data.ByteString.Char8(ByteString)
+import qualified Data.ByteString.Char8 as B
 import Kafka.Consumer
 import Kafka.Consumer.ByteReader
 import Kafka.Consumer.Basic
 import Kafka.Network
 import Kafka.Types
-import Network.Socket hiding (send, sendTo, recv, recvFrom)
-import Network.Socket.ByteString
+import System.IO
 
 data KeepAliveConsumer = KeepAliveConsumer {
     kaConsumer :: BasicConsumer
-  , kaSocket :: MVar Socket
+  , kaSocket :: MVar Handle
   }
 
 instance Consumer KeepAliveConsumer where
   consume c = do
     newC <- withReconnected c
-    result <- withSocket newC (\s -> do
-        _ <- send s $ consumeRequest newC
-        readDataResponse (socketByteReader s) dropErrorCode
+    result <- withSocket newC (\h -> do
+        _ <- B.hPut h $ consumeRequest newC
+        hFlush h
+        readDataResponse (handleByteReader h) dropErrorCode
       )
     parseConsumption result newC parseMessageSet
 
@@ -38,13 +39,13 @@ parseConsumption result newC f = case result of
       print ("error parsing response: " ++ show r)
       return ([], newC)
 
-withSocket :: KeepAliveConsumer -> (Socket -> IO a) -> IO a
+withSocket :: KeepAliveConsumer -> (Handle -> IO a) -> IO a
 withSocket c = withMVar (kaSocket c)
 
 withReconnected :: KeepAliveConsumer -> IO KeepAliveConsumer
 withReconnected c = do
   s <- takeMVar $ kaSocket c
-  x <- sIsConnected s
+  x <- hIsOpen s
   if x then do
     putMVar (kaSocket c) s
     return $! c
