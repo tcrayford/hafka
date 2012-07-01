@@ -3,9 +3,9 @@
 source script/test_helper
 
 main() {
-  (start_server)
   (cd src && ghc --make -fforce-recomp -rtsopts -threaded -O2 -o ./profiled Profiling/Main.hs)
-  (cd src && ./profiled)
+  (start_server)
+  (cd src && ./profiled +RTS -N4)
   kill_server
 }
 
