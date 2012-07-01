@@ -5,10 +5,9 @@ import Kafka.Producer
 import Kafka.Types
 import Specs.IntegrationHelper
 import Test.Hspec.Monadic
+import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
-import Test.HUnit
-import Test.Hspec.Monadic
 
 produceToConsume :: Stream -> Message -> Property
 produceToConsume stream message = monadicIO $ do

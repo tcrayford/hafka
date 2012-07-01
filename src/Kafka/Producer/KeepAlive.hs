@@ -21,11 +21,10 @@ maybeReconnect :: KeepAliveProducer -> IO KeepAliveProducer
 maybeReconnect p = do
   s <- takeMVar (kapSocket p)
   isConnected <- sIsConnected s
-  case isConnected of
-    True -> do
+  if isConnected then do
       putMVar (kapSocket p) s
       return $! p
-    False -> do
+    else do
       s' <- reconnectSocket s
       putMVar (kapSocket p) s'
       return $! p

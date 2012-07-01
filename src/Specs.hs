@@ -1,11 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Specs where
-import Control.Concurrent.MVar
-import Kafka.Consumer.KeepAlive
-import Kafka.Producer
-import Kafka.Types
-import Specs.IntegrationHelper
 import Specs.Kafka.Arbitrary()
 import Specs.Kafka.EndToEnd.BasicConsumerSpecs
 import Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
@@ -16,8 +11,6 @@ import Specs.Kafka.Unit.ConsumerSpecs
 import Specs.Kafka.Unit.KeepAliveSpecs
 import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck
-import Test.QuickCheck
-import Test.QuickCheck.Monadic
 import qualified Bench.Benchmarks as Bench
 
 main :: IO ()
@@ -47,6 +40,7 @@ integrationTests =
       prop "can produce with keep alive" keepAliveProducerProduces
       keepAliveProducerReconnects
 
+benchSpecs :: Spec
 benchSpecs = describe "the benchmarks" $ do
   it "roundtripBasicConsumer" Bench.roundtripBasicConsumer
   it "roundtripKeepAliveConsumer" Bench.roundtripKeepAliveConsumer

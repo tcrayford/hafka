@@ -49,7 +49,7 @@ keepAliveConsumesMultipleMessages = it "consumes multiple messages" $ do
           (m1, m2) = (Message "m1", Message "m2")
           
       result <- newEmptyMVar
-      c <- (keepAlive testConsumer)
+      c <- keepAlive testConsumer
 
       produce testProducer [m1, m2]
       recordMatching c m2 result

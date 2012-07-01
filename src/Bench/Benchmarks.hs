@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Bench.Benchmarks where
 import Control.Concurrent.MVar
 import Control.DeepSeq
@@ -20,6 +21,7 @@ import qualified Data.ByteString.Char8 as B
 
 instance NFData B.ByteString
 
+main :: IO ()
 main = do
   let p10 = rawMessage 10
       p100 = rawMessage 100
@@ -31,8 +33,8 @@ main = do
 
   defaultMainWith defaultConfig eval [
       bgroup "produce" [
-          bench "10p" $ whnf (fullProduceRequest producerSettings) $ [Message p10]
-        , bench "100p" $ whnf (fullProduceRequest producerSettings) $ [Message p100]
+          bench "10p" $ whnf (fullProduceRequest producerSettings) [Message p10]
+        , bench "100p" $ whnf (fullProduceRequest producerSettings) [Message p100]
       ],
       bgroup "consume" [
           bench "10c" $ whnf (parseMessageSet c10) consumerSettings
@@ -40,17 +42,21 @@ main = do
       ],
 
       bgroup "consumerRoundTrip" [
-          bench "roundtripBasicConsumer" $ roundtripBasicConsumer
-        , bench "roundtripKeepAliveConsumer" $ roundtripKeepAliveConsumer
+          bench "roundtripBasicConsumer" roundtripBasicConsumer
+        , bench "roundtripKeepAliveConsumer" roundtripKeepAliveConsumer
       ],
+
       bgroup "producerRoundTrip" [
-          bench "roundtripBasicProducer" $ roundtripBasicProducer
-        , bench "roundtripKeepAliveProducer" $ roundtripKeepAliveProducer
+          bench "roundtripBasicProducer" roundtripBasicProducer
+        , bench "roundtripKeepAliveProducer" roundtripKeepAliveProducer
       ]
     ]
 
+
+rawMessage :: Int -> B.ByteString
 rawMessage n = B.pack . take n $ repeat 'a'
 
+rawMessageSet :: Int -> B.ByteString
 rawMessageSet n = putMessage message
   where message = Message $! B.pack . take n $ repeat 'a'
 
@@ -99,6 +105,8 @@ roundtripKeepAliveProducer = do
   waitFor result (last messages) (killSocket' p)
 
 messagesWithPrefix :: B.ByteString -> [Message]
-messagesWithPrefix prefix = map f . take 100 $ [0..]
-  where f n = Message (prefix `B.append` (B.pack $ show n))
+messagesWithPrefix prefix = map f . take 100 $ range
+  where f n = Message (prefix `B.append` B.pack (show n))
+        range :: [Int]
+        range = [0..]
 
