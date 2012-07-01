@@ -31,9 +31,10 @@ consumeRequest a = runPut $ do
   encodeRequest a
 
 encodeRequestSize :: (Consumer c) => c -> Put
-encodeRequestSize c = putWord32be $ fromIntegral requestSize
-  where requestSize = 2 + 2 + B.length topic + 4 + 8 + 4
-        (Topic topic) = getTopic c
+encodeRequestSize c = putWord32be $ fromIntegral $ requestSize (getTopic c)
+
+requestSize :: Topic -> Int
+requestSize (Topic topic) = 2 + 2 + B.length topic + 4 + 8 + 4
 
 getTopic :: (Consumer c) => c -> Topic
 getTopic c = sTopic $ getStream c
