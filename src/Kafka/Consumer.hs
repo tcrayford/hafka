@@ -8,8 +8,6 @@ import Kafka.Consumer.ByteReader
 import Kafka.Parsing
 import Kafka.Response
 import Kafka.Types
-import Network
-import System.IO
 import qualified Data.ByteString.Char8 as B
 
 class Consumer c where

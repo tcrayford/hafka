@@ -3,7 +3,6 @@
 module Specs where
 import Control.Concurrent.MVar
 import Kafka.Consumer.KeepAlive
-import Kafka.Network
 import Kafka.Producer
 import Kafka.Types
 import Specs.IntegrationHelper
@@ -14,7 +13,6 @@ import Specs.Kafka.KeepAlive
 import Specs.Kafka.ParsingSpecs
 import Specs.Kafka.Unit.ConsumerSpecs
 import Specs.Kafka.Unit.KeepAliveSpecs
-import Test.HUnit
 import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck
 import Test.QuickCheck

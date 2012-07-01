@@ -1,17 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Specs.Kafka.ParsingSpecs where
-import Test.Hspec.Monadic
-import Test.Hspec.HUnit()
-import Test.HUnit
-import Test.Hspec.QuickCheck
-import Test.QuickCheck
-import Kafka.Producer
-import Kafka.Types
-import Kafka.Response
-import Kafka.Consumer
-import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Put
-import Specs.Kafka.Arbitrary
+import Kafka.Consumer
+import Kafka.Producer
+import Kafka.Response
+import Kafka.Types
+import Specs.Kafka.Arbitrary()
+import Test.HUnit
+import Test.Hspec.HUnit()
+import Test.Hspec.Monadic
+import Test.Hspec.QuickCheck
+import qualified Data.ByteString.Char8 as B
 
 messageProperties :: Spec
 messageProperties = describe "the client" $ do
