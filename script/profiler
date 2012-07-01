@@ -1,0 +1,12 @@
+#!/bin/bash
+
+source script/test_helper
+
+main() {
+  (start_server)
+  (cd src && ghc --make -fforce-recomp -rtsopts -threaded -O2 -o ./profiled Profiling/Main.hs)
+  (cd src && ./profiled)
+  kill_server
+}
+
+main
