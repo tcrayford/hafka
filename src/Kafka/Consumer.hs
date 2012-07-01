@@ -71,7 +71,7 @@ putOffset c = putWord64be $ fromIntegral offset
 putMaxSize :: Put
 putMaxSize = putWord32be 1048576 -- 1 MB
 
-type RawConsumeResponseHandler = (ErrorCode -> ByteString -> IO Response)
+type RawConsumeResponseHandler = (ErrorCode -> ByteString -> Response)
 
 readDataResponse :: ByteReader -> RawConsumeResponseHandler -> IO Response
 readDataResponse h handler = do
@@ -79,14 +79,14 @@ readDataResponse h handler = do
   let (Right dataLength) = runGet getDataLength rawLength
   rawResponse <- h dataLength
   let x = parseErrorCode rawResponse
-  handler x rawResponse
+  return $! handler x rawResponse
 
 type Response = Either ErrorCode ByteString
 
 dropErrorCode :: RawConsumeResponseHandler
 dropErrorCode x rawResponse = case x of
-    Success -> return $! Right $ B.drop 2 rawResponse
-    e -> return $! Left e
+    Success -> Right $ B.drop 2 rawResponse
+    e -> Left e
 
 getDataLength :: Get Int
 getDataLength = do
@@ -102,7 +102,7 @@ parseMessageSet' a messages processed totalLength settings
   | processed <= totalLength = parseMessageSet' a newMessages newProcessed totalLength newSettings
   | otherwise = (messages, settings)
   where messageSize = parseMessageSize processed a
-        parsed = parseMessage $ bSplice a processed (messageSize + 4)
+        parsed = parseMessage $ bSplice processed (messageSize + 4) a
         newSettings = increaseOffsetBy settings processed
         newMessages = messages ++ [parsed]
         newProcessed = processed + 4 + messageSize
@@ -112,8 +112,8 @@ parseMessageSize processed raw = fromIntegral $ forceEither "parseMessageSize" $
                                                 skip processed
                                                 getWord32be
 
-bSplice :: ByteString -> Int -> Int -> ByteString
-bSplice a start end = B.take end (B.drop start a)
+bSplice :: Int -> Int -> ByteString -> ByteString
+bSplice start end a = B.take end (B.drop start a)
 
 parseMessage :: ByteString -> Message
 parseMessage raw = Message $ forceEither "parseMessage" $ runGet' raw $ do

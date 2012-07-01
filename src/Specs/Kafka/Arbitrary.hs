@@ -20,6 +20,11 @@ instance Arbitrary Message where
     a <- nonEmptyString
     return $ Message (B.pack a)
 
+instance Arbitrary B.ByteString where
+  arbitrary = do
+    a <- arbitrary
+    return $! B.pack a
+
 nonEmptyString :: Gen String
 nonEmptyString = suchThat (listOf $ elements ['a'..'z']) (not . null)
 

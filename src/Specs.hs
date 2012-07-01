@@ -12,6 +12,7 @@ import Specs.Kafka.EndToEnd.BasicConsumerSpecs
 import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import Specs.Kafka.KeepAlive
 import Specs.Kafka.ParsingSpecs
+import Specs.Kafka.Unit.ConsumerSpecs
 import Specs.Kafka.Unit.KeepAliveSpecs
 import Test.HUnit
 import Test.Hspec.Monadic
@@ -25,6 +26,7 @@ main = hspec $
     parsingErrorCode
     reconnectingToClosedSocket
     parseConsumptionTest
+    consumerSpecs
     messageProperties
     integrationTests
 
