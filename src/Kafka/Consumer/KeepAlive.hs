@@ -44,9 +44,14 @@ withSocket c = withMVar (kaSocket c)
 withReconnected :: KeepAliveConsumer -> IO KeepAliveConsumer
 withReconnected c = do
   s <- takeMVar $ kaSocket c
-  s' <- reconnectSocket s
-  putMVar (kaSocket c) s'
-  return $! c
+  x <- sIsConnected s
+  if x then do
+    putMVar (kaSocket c) s
+    return $! c
+  else do
+    s' <- reconnectSocket s
+    putMVar (kaSocket c) s'
+    return $! c
 
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do

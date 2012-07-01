@@ -5,7 +5,7 @@ source script/test_helper
 set -e
 
 (cd src &&
-  ghc --make -O2 -o ./perf Bench/Main.hs)
+  ghc --make -fforce-recomp -rtsopts -threaded -O2 -o ./perf Bench/Main.hs)
 
 trim() {
   sed 's/ *$//g'
@@ -16,45 +16,45 @@ find_mean() {
 }
 
 produce10() {
-  echo "`(cd src && ./perf produce/10p | find_mean)`" 
+  echo "`(cd src && ./perf produce/10p +RTS -N4 | find_mean)`"
 }
 
 produce100() {
-  echo "`(cd src && ./perf produce/100p | find_mean)`" 
+  echo "`(cd src && ./perf produce/100p +RTS -N4 | find_mean)`"
 }
 
 consume10() {
-  echo "`(cd src && ./perf consume/10c | find_mean)`"
+  echo "`(cd src && ./perf consume/10c +RTS -N4 | find_mean)`"
 }
 
 consume100() {
-  echo "`(cd src && ./perf consume/100c | find_mean)`"
+  echo "`(cd src && ./perf consume/100c +RTS -N4 | find_mean)`"
 }
 
 roundtripBasicConsumer() {
   (start_server)
-  result=$(echo "`(cd src && ./perf consumerRoundTrip/roundtripBasicConsumer | find_mean)`")
+  result=$(echo "`(cd src && ./perf consumerRoundTrip/roundtripBasicConsumer +RTS -N4 | find_mean)`")
   kill_server
   echo "$result"
 }
 
 roundtripKeepAliveConsumer() {
   (start_server)
-  result=$(echo "`(cd src && ./perf consumerRoundTrip/roundtripKeepAliveConsumer | find_mean)`")
+  result=$(echo "`(cd src && ./perf consumerRoundTrip/roundtripKeepAliveConsumer +RTS -N4 | find_mean)`")
   kill_server
   echo "$result"
 }
 
 roundtripBasicProducer() {
   (start_server)
-  result=$(echo "`(cd src && ./perf producerRoundTrip/roundtripBasicProducer | find_mean)`")
+  result=$(echo "`(cd src && ./perf producerRoundTrip/roundtripBasicProducer +RTS -N4 | find_mean)`")
   kill_server
   echo "$result"
 }
 
 roundtripKeepAliveProducer() {
   (start_server)
-  result=$(echo "`(cd src && ./perf producerRoundTrip/roundtripKeepAliveProducer | find_mean)`")
+  result=$(echo "`(cd src && ./perf producerRoundTrip/roundtripKeepAliveProducer +RTS -N4 | find_mean)`")
   kill_server
   echo "$result"
 }

@@ -13,7 +13,7 @@ coupledProducerConsumer s = (ProducerSettings s, BasicConsumer s $ Offset 0)
 
 waitFor :: (Show a) => MVar a -> a -> IO () -> IO ()
 waitFor result message finalizer = do
-  f <- timeout 100000 $ takeMVar result
+  f <- timeout 1000000 $ takeMVar result
   finalizer
   case f of
     (Just _) -> return ()
