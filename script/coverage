@@ -3,17 +3,12 @@
 source script/test_helper
 
 main() {
-  (cd /tmp/kafka-logs && ls | xargs rm -r)
-  (start_server)
-  wait_for_server
-  pid=$(echo "`lsof -i :9092 | tail -1 | cut -d ' ' -f 5`")
+  start_server
   (cd src &&
     ghc --make Main.hs -fforce-recomp -fhpc -o SpecRunner && ./SpecRunner)
   (cd src &&
     hpc markup SpecRunner)
-  kill -9 $pid
-  (cd kafka/kafka && bin/kafka-server-stop.sh)
-  wait_for_server_stop
+  kill_server
   script/clean-build
   open src/hpc_index.html
 }

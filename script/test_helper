@@ -1,8 +1,10 @@
 #!/bin/bash
 
 start_server() {
-    cd kafka/kafka
-    bin/kafka-server-start.sh config/server.properties > /dev/null 2>&1 &
+  (cd /tmp/kafka-logs && ls | xargs rm -r)
+  (cd kafka/kafka &&
+    bin/kafka-server-start.sh config/server.properties > /dev/null 2>&1 &)
+  wait_for_server
 }
 
 wait_for_server() {
@@ -21,5 +23,17 @@ wait_for_server_stop() {
             break
         fi
     done
+}
+
+find_server() {
+  echo "`lsof -i :9092 | tail -1 | cut -d ' ' -f 5`"
+}
+
+kill_server() {
+  pid=$(find_server)
+  kill -9 $pid
+  (cd kafka/kafka && bin/kafka-server-stop.sh)
+  wait_for_server_stop
+  (cd /tmp/kafka-logs && ls | xargs rm -r)
 }
 
