@@ -5,4 +5,4 @@ src/*.html
 .hpc
 *.tix
 src/SpecRunner
-scr/profiled
+src/profiled
