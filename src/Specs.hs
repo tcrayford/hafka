@@ -36,19 +36,8 @@ integrationTests =
       prop "can produce multiple messages" deliversWhenProducingMultipleMessages
     describe "keep alive consumer" $ do
       keepAliveReconectsToClosedSockets
+      keepAliveConsumesMultipleMessages 
       prop "can consume with a keepalive" consumesWithKeepAlive
-      prop "keepAlive consumes multiple messages" keepAliveConsumesMultipleMessages 
-
-consumesWithKeepAlive :: Stream -> Message -> Property
-consumesWithKeepAlive stream message = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
-
-      run $ produce testProducer [message]
-      c <- run (keepAlive testConsumer)
-      run $ recordMatching c message result
-
-      run $ waitFor result message (killSocket c)
 
 
 -- higher level api? typeclasses for Produceable, Consumeable?

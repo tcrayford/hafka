@@ -14,6 +14,19 @@ import Test.Hspec.Monadic
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
 
+consumesWithKeepAlive :: Stream -> Message -> Property
+consumesWithKeepAlive stream message = monadicIO $ do
+      let (testProducer, testConsumer) = coupledProducerConsumer stream
+      result <- run newEmptyMVar
+
+      run $ produce testProducer [message]
+      c <- run (keepAlive testConsumer)
+      run $ recordMatching c message result
+
+      run $ waitFor result message (killSocket c)
+
+
+keepAliveReconectsToClosedSockets :: Spec
 keepAliveReconectsToClosedSockets = it "reconnects to closed sockets" $ do
 
       let stream = Stream (Topic "keep_alive_reconnects_to_closed_sockets") (Partition 0)
@@ -28,16 +41,19 @@ keepAliveReconectsToClosedSockets = it "reconnects to closed sockets" $ do
 
       waitFor result message (killSocket c)
 
-keepAliveConsumesMultipleMessages :: Stream -> Message -> Message -> Property
-keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
-      c <- run (keepAlive testConsumer)
+keepAliveConsumesMultipleMessages :: Spec
+keepAliveConsumesMultipleMessages = it "consumes multiple messages" $ do
+      let stream = Stream (Topic "keep_alive_consumes_multiple_messages") (Partition 0)
+          (testProducer, testConsumer) = coupledProducerConsumer stream
+          (m1, m2) = (Message "m1", Message "m2")
+          
+      result <- newEmptyMVar
+      c <- (keepAlive testConsumer)
 
-      run $ produce testProducer [m1, m2]
-      run $ recordMatching c m2 result
+      produce testProducer [m1, m2]
+      recordMatching c m2 result
 
-      run $ waitFor result m2 (return ())
+      waitFor result m2 (return ())
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
 recordMatching c original r = forkIO' $ consumeLoop c go
