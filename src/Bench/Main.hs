@@ -1,17 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
+import Control.Concurrent.MVar
+import Control.DeepSeq
+import Control.Exception(evaluate)
+import Control.Monad.Trans(liftIO)
+import Control.Monad(forM_)
+import Criterion.Config(defaultConfig)
 import Criterion.Main
-import qualified Data.ByteString.Char8 as B
-import Kafka.Producer
 import Kafka.Consumer
 import Kafka.Consumer.Basic
 import Kafka.Consumer.KeepAlive
+import Kafka.Producer
 import Kafka.Types
-import Control.Exception(evaluate)
-import Control.Monad.Trans(liftIO)
-import Criterion.Config(defaultConfig)
-import Control.DeepSeq
-import Control.Concurrent.MVar
 import Specs.IntegrationHelper
+import Specs.Kafka.EndToEnd.KeepAliveSpecs
+import qualified Data.ByteString.Char8 as B
 
 instance NFData B.ByteString
 
@@ -49,24 +51,28 @@ roundtripBasicConsumer :: IO ()
 roundtripBasicConsumer = do
   let stream = Stream (Topic "bench_basic_consumer_roundtrip") (Partition 0)
       (testProducer, testConsumer) = coupledProducerConsumer stream
-      message = Message "bench basic consumer roundtrip"
+      messages = messagesWithPrefix "benchBasicConsumerRoundTrip"
 
   result <- newEmptyMVar
-  produce testProducer [message]
-  recordMatching testConsumer message result
+  forM_ messages (\m -> produce testProducer [m])
+  recordMatching testConsumer (last messages) result
 
-  waitFor result message (return ())
+  waitFor result (last messages) (return ())
 
 roundtripKeepAliveConsumer :: IO ()
 roundtripKeepAliveConsumer = do
   let stream = Stream (Topic "bench_keep_alive_consumer_roundtrip") (Partition 0)
       (testProducer, testConsumer) = coupledProducerConsumer stream
-      message = Message "bench keep alive consumer roundtrip"
+      messages = messagesWithPrefix "benchKeepAliveConsumerRoundTrip"
 
   c <- keepAlive testConsumer
   result <- newEmptyMVar
-  produce testProducer [message]
-  recordMatching c message result
+  forM_ messages (\m -> produce testProducer [m])
+  recordMatching c (last messages) result
 
-  waitFor result message (return ())
+  waitFor result (last messages) (killSocket c)
+
+messagesWithPrefix :: B.ByteString -> [Message]
+messagesWithPrefix prefix = map f . take 100 $ [0..]
+  where f n = Message (prefix `B.append` (B.pack $ show n))
 
