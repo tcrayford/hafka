@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source script/test_helper
+
 set -e
 
 (cd src &&
@@ -29,8 +31,22 @@ consume100() {
   echo "`(cd src && ./perf consume/100c | find_mean)`"
 }
 
+roundtripBasicConsumer() {
+  (start_server)
+  result=$(echo "`(cd src && ./perf roundtrip/roundtripBasicConsumer | find_mean)`")
+  kill_server
+  echo "$result"
+}
+
+roundtripKeepAliveConsumer() {
+  (start_server)
+  result=$(echo "`(cd src && ./perf roundtrip/roundtripKeepAliveConsumer | find_mean)`")
+  kill_server
+  echo "$result"
+}
+
 # Get the hash
 hash="`git log -1 --pretty=%h`"
 
-echo "hash, produce-10-mean, produce-100-mean, consume-10-mean, consume-100-mean"
-echo "$hash,`produce10`,`produce100`,`consume10`,`consume100`"
+echo "hash, produce-10-mean, produce-100-mean, consume-10-mean, consume-100-mean, roundtripBasicConsumer-mean, roundtripKeepAliveConsumer-mean"
+echo "$hash,`produce10`,`produce100`,`consume10`,`consume100`,`roundtripBasicConsumer`, `roundtripKeepAliveConsumer`"
