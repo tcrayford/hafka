@@ -43,8 +43,9 @@ integrationTests =
       keepAliveConsumesMultipleMessages 
       prop "can consume with a keepalive" consumesWithKeepAlive
 
-    describe "keep alive producer" $
+    describe "keep alive producer" $ do
       prop "can produce with keep alive" keepAliveProducerProduces
+      keepAliveProducerReconnects
 
 benchSpecs = describe "the benchmarks" $ do
   it "roundtripBasicConsumer" Bench.roundtripBasicConsumer

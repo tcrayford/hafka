@@ -55,16 +55,7 @@ rawMessageSet n = putMessage message
   where message = Message $! B.pack . take n $ repeat 'a'
 
 roundtripBasicConsumer :: IO ()
-roundtripBasicConsumer = do
-  let stream = Stream (Topic "bench_basic_consumer_roundtrip") (Partition 0)
-      (testProducer, testConsumer) = coupledProducerConsumer stream
-      messages = messagesWithPrefix "benchBasicConsumerRoundTrip"
-
-  result <- newEmptyMVar
-  forM_ messages (\m -> produce testProducer [m])
-  recordMatching testConsumer (last messages) result
-
-  waitFor result (last messages) (return ())
+roundtripBasicConsumer = roundtripBasics "bench_basic_consumer_roundtrip"
 
 roundtripKeepAliveConsumer :: IO ()
 roundtripKeepAliveConsumer = do
@@ -80,10 +71,13 @@ roundtripKeepAliveConsumer = do
   waitFor result (last messages) (killSocket c)
 
 roundtripBasicProducer :: IO ()
-roundtripBasicProducer = do
-  let stream = Stream (Topic "bench_basic_producer_roundtrip") (Partition 0)
+roundtripBasicProducer = roundtripBasics "bench_basic_producer_roundtrip"
+
+roundtripBasics :: B.ByteString -> IO ()
+roundtripBasics t = do
+  let stream = Stream (Topic t) (Partition 0)
       (testProducer, testConsumer) = coupledProducerConsumer stream
-      messages = messagesWithPrefix "benchBasicProducerRoundTrip"
+      messages = messagesWithPrefix t
 
   result <- newEmptyMVar
   forM_ messages (\m -> produce testProducer [m])
@@ -102,9 +96,9 @@ roundtripKeepAliveProducer = do
   forM_ messages (\m -> produce p [m])
   recordMatching testConsumer (last messages) result
 
-  waitFor result (last messages) (return ())
+  waitFor result (last messages) (killSocket' p)
 
 messagesWithPrefix :: B.ByteString -> [Message]
-messagesWithPrefix prefix = map f . take 50 $ [0..]
+messagesWithPrefix prefix = map f . take 100 $ [0..]
   where f n = Message (prefix `B.append` (B.pack $ show n))
 

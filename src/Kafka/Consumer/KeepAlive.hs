@@ -48,14 +48,6 @@ withReconnected c = do
   putMVar (kaSocket c) s'
   return $! c
 
-reconnectSocket :: Socket -> IO Socket
-reconnectSocket s = do
-  c <- sIsConnected s
-  if c then
-    return s
-  else
-    connectToKafka
-
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do
   s <- connectToKafka >>= newMVar

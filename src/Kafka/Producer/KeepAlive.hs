@@ -12,11 +12,26 @@ data KeepAliveProducer = KeepAliveProducer {
 
 instance Producer KeepAliveProducer where
   produce p messages = do
-    s <- takeMVar (kapSocket p)
-    send s $ fullProduceRequest (kapSettings p) messages
-    putMVar (kapSocket p) s
+    newP <- maybeReconnect p
+    s <- takeMVar (kapSocket newP)
+    send s $ fullProduceRequest (kapSettings newP) messages
+    putMVar (kapSocket newP) s
+
+maybeReconnect :: KeepAliveProducer -> IO KeepAliveProducer
+maybeReconnect p = do
+  s <- takeMVar (kapSocket p)
+  isConnected <- sIsConnected s
+  case isConnected of
+    True -> do
+      putMVar (kapSocket p) s
+      return $! p
+    False -> do
+      s' <- reconnectSocket s
+      putMVar (kapSocket p) s'
+      return $! p
 
 keepAliveProducer :: ProducerSettings -> IO KeepAliveProducer
 keepAliveProducer p = do
   s <- connectToKafka >>= newMVar
   return $! KeepAliveProducer s p
+

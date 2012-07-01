@@ -4,6 +4,7 @@ module Kafka.Network(
   , socketToHandle
   , IOMode(..)
   , connectToKafka
+  , reconnectSocket
   ) where
 import Network.Socket
 import Network.BSD
@@ -45,4 +46,12 @@ catchIO = Exception.catch
 
 connectToKafka :: IO Socket
 connectToKafka = connectTo "localhost" $ N.PortNumber 9092
+
+reconnectSocket :: Socket -> IO Socket
+reconnectSocket s = do
+  c <- sIsConnected s
+  if c then
+    return s
+  else
+    connectToKafka
 
