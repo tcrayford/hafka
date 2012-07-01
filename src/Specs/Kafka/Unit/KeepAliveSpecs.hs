@@ -1,5 +1,6 @@
 module Specs.Kafka.Unit.KeepAliveSpecs where
 import Test.Hspec.Monadic
+import Test.Hspec.HUnit
 import Test.HUnit
 import Kafka.Network
 import Kafka.Consumer.KeepAlive
