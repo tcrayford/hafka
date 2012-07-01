@@ -12,6 +12,7 @@ main () {
   kill -9 $pid
   (cd kafka/kafka && bin/kafka-server-stop.sh)
   wait_for_server_stop
+  (cd /tmp/kafka-logs && ls | xargs rm -r)
 }
 
 main
