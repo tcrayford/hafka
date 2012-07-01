@@ -3,6 +3,7 @@ module Kafka.Network(
   , connectTo
   , socketToHandle
   , IOMode(..)
+  , connectToKafka
   ) where
 import Network.Socket
 import Network.BSD
@@ -41,4 +42,7 @@ firstSuccessful (p:ps) = catchIO p $ \e ->
 
 catchIO :: IO a -> (Exception.IOException -> IO a) -> IO a
 catchIO = Exception.catch
+
+connectToKafka :: IO Socket
+connectToKafka = connectTo "localhost" $ N.PortNumber 9092
 

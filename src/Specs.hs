@@ -9,6 +9,7 @@ import Specs.IntegrationHelper
 import Specs.Kafka.Arbitrary()
 import Specs.Kafka.EndToEnd.BasicConsumerSpecs
 import Specs.Kafka.EndToEnd.KeepAliveSpecs
+import Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
 import Specs.Kafka.KeepAlive
 import Specs.Kafka.ParsingSpecs
 import Specs.Kafka.Unit.ConsumerSpecs
@@ -40,6 +41,8 @@ integrationTests =
       keepAliveConsumesMultipleMessages 
       prop "can consume with a keepalive" consumesWithKeepAlive
 
+    describe "keep alive producer" $
+      prop "can produce with keep alive" keepAliveProducerProduces
 
 -- higher level api? typeclasses for Produceable, Consumeable?
 -- put the basic consumer in Kafka.Consumer.Basic

@@ -56,9 +56,6 @@ reconnectSocket s = do
   else
     connectToKafka
 
-connectToKafka :: IO Socket
-connectToKafka = connectTo "localhost" $ PortNumber 9092
-
 keepAlive :: BasicConsumer -> IO KeepAliveConsumer
 keepAlive c = do
   s <- connectToKafka >>= newMVar
