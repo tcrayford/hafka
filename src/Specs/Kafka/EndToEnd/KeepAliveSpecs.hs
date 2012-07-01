@@ -1,27 +1,32 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Specs.Kafka.EndToEnd.KeepAliveSpecs where
-import Test.QuickCheck
-import Kafka.Producer
+import Control.Concurrent.MVar
+import Control.Monad
 import Kafka.Consumer
 import Kafka.Consumer.KeepAlive
+import Kafka.Producer
 import Kafka.Types
-import Control.Concurrent.MVar
-import Test.QuickCheck.Monadic
-import Specs.IntegrationHelper
 import Network.Socket(sClose)
-import Control.Monad
+import Specs.IntegrationHelper
 import System.Timeout
+import Test.HUnit
+import Test.Hspec.Monadic
+import Test.QuickCheck
+import Test.QuickCheck.Monadic
 
-keepAliveReconectsToClosedSockets :: Stream -> Message -> Property
-keepAliveReconectsToClosedSockets stream message = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
-      c <- run (keepAlive testConsumer)
+keepAliveReconectsToClosedSockets = it "reconnects to closed sockets" $ do
 
-      run $ recordMatching c message result
-      run $ killSocket c
-      run $ produce testProducer [message]
+      let stream = Stream (Topic "keep_alive_reconnects_to_closed_sockets") (Partition 0)
+          message = Message "keep alive should receive this message after closing the socket"
+          (testProducer, testConsumer) = coupledProducerConsumer stream
+      result <- newEmptyMVar
+      c <- keepAlive testConsumer
 
-      run $ waitFor result message (killSocket c)
+      recordMatching c message result
+      killSocket c
+      produce testProducer [message]
+
+      waitFor result message (killSocket c)
 
 keepAliveConsumesMultipleMessages :: Stream -> Message -> Message -> Property
 keepAliveConsumesMultipleMessages stream m1 m2 = monadicIO $ do
