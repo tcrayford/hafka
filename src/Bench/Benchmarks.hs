@@ -1,11 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Bench.Benchmarks where
+import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar
 import Control.DeepSeq
 import Control.Exception(evaluate)
+import Control.Monad(forM_, void)
 import Control.Monad.Trans(liftIO)
-import Control.Monad(forM_)
 import Criterion.Config(defaultConfig)
 import Criterion.Main
 import Kafka.Consumer
@@ -15,8 +16,8 @@ import Kafka.Producer
 import Kafka.Producer.KeepAlive
 import Kafka.Types
 import Specs.IntegrationHelper
-import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
+import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import qualified Data.ByteString.Char8 as B
 
 instance NFData B.ByteString
@@ -71,7 +72,7 @@ roundtripKeepAliveConsumer = do
 
   c <- keepAlive testConsumer
   result <- newEmptyMVar
-  forM_ messages (\m -> produce testProducer [m])
+  forM_ messages (\m -> void (forkIO $ produce testProducer [m]))
   recordMatching c (last messages) result
 
   waitFor result (last messages) (killSocket c)
@@ -86,7 +87,7 @@ roundtripBasics t = do
       messages = messagesWithPrefix t
 
   result <- newEmptyMVar
-  forM_ messages (\m -> produce testProducer [m])
+  forM_ messages (\m -> void (forkIO $ produce testProducer [m]))
   recordMatching testConsumer (last messages) result
 
   waitFor result (last messages) (return ())
@@ -99,13 +100,13 @@ roundtripKeepAliveProducer = do
 
   p <- keepAliveProducer testProducer
   result <- newEmptyMVar
-  forM_ messages (\m -> produce p [m])
+  forM_ messages (\m -> void (forkIO $ produce testProducer [m]))
   recordMatching testConsumer (last messages) result
 
   waitFor result (last messages) (killSocket' p)
 
 messagesWithPrefix :: B.ByteString -> [Message]
-messagesWithPrefix prefix = map f . take 2 $ range
+messagesWithPrefix prefix = map f . take 11 $ range
   where f n = Message (prefix `B.append` B.pack (show n))
         range :: [Int]
         range = [0..]

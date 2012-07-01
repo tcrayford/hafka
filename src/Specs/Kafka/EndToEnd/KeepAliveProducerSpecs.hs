@@ -11,6 +11,7 @@ import System.IO
 import System.Timeout
 import Test.HUnit
 import Test.Hspec.Monadic
+import Test.Hspec.HUnit()
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
 
