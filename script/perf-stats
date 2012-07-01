@@ -32,4 +32,5 @@ consume100() {
 # Get the hash
 hash="`git log -1 --pretty=%h`"
 
+echo "hash, produce-10-mean, produce-100-mean, consume-10-mean, consume-100-mean"
 echo "$hash,`produce10`,`produce100`,`consume10`,`consume100`"
