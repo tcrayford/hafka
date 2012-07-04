@@ -7,6 +7,7 @@ import Data.Serialize.Put
 import Kafka.Consumer.ByteReader
 import Kafka.Parsing
 import Kafka.Response
+import Kafka.Request
 import Kafka.Types
 import qualified Data.ByteString.Char8 as B
 
@@ -43,24 +44,13 @@ getPartition c = sPartition $ getStream c
 encodeRequest :: (Consumer c) => c -> Put
 encodeRequest a = do
   putRequestType
-  putTopic a
-  putPartition a
+  putStream (getStream a)
   putOffset a
   putMaxSize
 
 putRequestType :: Put
 putRequestType = putWord16be $ fromIntegral raw
   where (RequestType raw) = fetchRequestType
-
-putTopic :: (Consumer c) => c -> Put
-putTopic c  = do
-  putWord16be . fromIntegral $ B.length t
-  putByteString t
-  where (Topic t) = getTopic c
-
-putPartition :: (Consumer c) => c -> Put
-putPartition c = putWord32be $ fromIntegral p
-  where (Partition p) = getPartition c
 
 putOffset :: (Consumer c) => c -> Put
 putOffset c = putWord64be $ fromIntegral offset
