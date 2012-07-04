@@ -6,3 +6,4 @@ src/*.html
 *.tix
 src/SpecRunner
 src/profiled
+src/profiled.prof

@@ -3,10 +3,10 @@
 source script/test_helper
 
 main() {
-  (cd src && ghc --make -fforce-recomp -rtsopts -threaded -O2 -o ./profiled Profiling/Main.hs)
   (start_server)
-  (cd src && ./profiled +RTS -N4)
+  (cd src && ./profiled +RTS -P)
   kill_server
+  script/clean-build > /dev/null 2>&1
 }
 
 main
