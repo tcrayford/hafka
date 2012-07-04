@@ -5,7 +5,7 @@ import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar
 import Control.DeepSeq
 import Control.Exception(evaluate)
-import Control.Monad(forM_, void)
+import Control.Monad(void, mapM_)
 import Control.Monad.Trans(liftIO)
 import Criterion.Config(defaultConfig)
 import Criterion.Main
@@ -72,7 +72,7 @@ roundtripKeepAliveConsumer = do
 
   c <- keepAlive testConsumer
   result <- newEmptyMVar
-  forM_ messages (\m -> void (forkIO $ produce testProducer [m]))
+  produceAll testProducer messages
   recordMatching c (last messages) result
 
   waitFor result (last messages) (killSocket c)
@@ -112,5 +112,5 @@ messagesWithPrefix prefix = map f . take 11 $ range
         range = [0..]
 
 produceAll :: (Producer p) => p -> [Message] -> IO ()
-produceAll p ms = forM_ ms (\m -> void (forkIO $ produce p [m]))
+produceAll p = mapM_ (\m -> void (forkIO $ produce p [m]))
 
