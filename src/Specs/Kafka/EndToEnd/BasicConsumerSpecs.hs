@@ -5,7 +5,6 @@ import Kafka.Producer
 import Kafka.Types
 import Specs.IntegrationHelper
 import Test.Hspec.Monadic
-import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
 

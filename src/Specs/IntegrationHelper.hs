@@ -22,6 +22,7 @@ waitFor result message finalizer = do
 killCurrent :: IO ()
 killCurrent = myThreadId >>= killThread
 
+forkIO' :: IO () -> IO ()
 forkIO' a = void $ forkIO a
 
 recordMatching :: (Consumer c) => c -> Message -> MVar Message -> IO ()
