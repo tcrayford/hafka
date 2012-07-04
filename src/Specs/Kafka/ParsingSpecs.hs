@@ -21,10 +21,10 @@ messageProperties = describe "the client" $ do
     \message -> parseMessage (putMessage message) == message
 
   it "parsing empty message set gives empty list" $
-    (fst $ parseMessageSet "" c) @?= []
+    fst (parseMessageSet "" c) @?= []
 
   it "parsing the empty message set does not change the offset" $
-    (getOffset $ snd $ parseMessageSet "" c) @?= (Offset 0)
+    getOffset (snd $ parseMessageSet "" c) @?= Offset 0
 
   prop "serialized message length is 1 + 4 + n" $
     \message@(Message raw) -> parseMessageSize 0 (putMessage message) == 1 + 4 + B.length raw
