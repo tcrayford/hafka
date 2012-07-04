@@ -3,6 +3,7 @@
 source script/test_helper
 
 main() {
+  (cd src && ghc --make Profiling/Main.hs -fforce-recomp -prof -auto-all -caf-all -O2 -rtsopts -o ./profiled)
   (start_server)
   (cd src && ./profiled +RTS -P)
   kill_server
