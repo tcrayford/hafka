@@ -19,6 +19,7 @@ import Specs.IntegrationHelper
 import Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
 import Specs.Kafka.EndToEnd.KeepAliveSpecs
 import qualified Data.ByteString.Char8 as B
+import Data.Serialize.Put
 
 instance NFData B.ByteString
 
@@ -58,7 +59,7 @@ rawMessage :: Int -> B.ByteString
 rawMessage n = B.pack . take n $ repeat 'a'
 
 rawMessageSet :: Int -> B.ByteString
-rawMessageSet n = putMessage message
+rawMessageSet n = runPut $ putMessage message
   where message = Message $! B.pack . take n $ repeat 'a'
 
 roundtripBasicConsumer :: IO ()

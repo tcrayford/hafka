@@ -18,7 +18,7 @@ messageProperties = describe "the client" $ do
   let stream = Stream (Topic "ignored topic") (Partition 0)
       c = BasicConsumer stream (Offset 0)
   prop "serialize -> deserialize is id" $
-    \message -> parseMessage (putMessage message) == message
+    \message -> parseMessage (runPut $ putMessage message) == message
 
   it "parsing empty message set gives empty list" $
     fst (parseMessageSet "" c) @?= []
@@ -27,7 +27,7 @@ messageProperties = describe "the client" $ do
     getOffset (snd $ parseMessageSet "" c) @?= Offset 0
 
   prop "serialized message length is 1 + 4 + n" $
-    \message@(Message raw) -> parseMessageSize 0 (putMessage message) == 1 + 4 + B.length raw
+    \message@(Message raw) -> parseMessageSize 0 (runPut $ putMessage message) == 1 + 4 + B.length raw
 
 parsingErrorCode :: Spec
 parsingErrorCode = describe "the client" $

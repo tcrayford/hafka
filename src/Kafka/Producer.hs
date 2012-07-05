@@ -8,6 +8,7 @@ import Network
 import Data.Serialize.Put
 import Data.Digest.CRC32
 import System.IO
+import Control.Monad
 
 data ProducerSettings = ProducerSettings Stream
 
@@ -41,12 +42,11 @@ putProduceRequestType = putWord16be $ fromIntegral raw
 putMessages :: [Message] -> Put
 putMessages messages = do
   putWord32be $ fromIntegral (sum $ Prelude.map mLength messages)
-  putByteString encoded
-  where encoded = B.concat $ Prelude.map putMessage messages
-        mLength (Message m) = 5 + 4 + B.length m
+  mapM_ putMessage messages
+  where mLength (Message m) = 5 + 4 + B.length m
 
-putMessage :: Message -> ByteString
-putMessage (Message message) = runPut $ do
+putMessage :: Message -> Put
+putMessage (Message message) = do
   putWord32be $ fromIntegral (5 + B.length message)
   putMessageMagic
   putWord32be (crc32 message)
