@@ -40,20 +40,17 @@ putProduceRequestType = putWord16be $ fromIntegral raw
 
 putMessages :: [Message] -> Put
 putMessages messages = do
-  putWord32be $ fromIntegral (B.length encoded)
+  putWord32be $ fromIntegral (sum $ Prelude.map mLength messages)
   putByteString encoded
   where encoded = B.concat $ Prelude.map putMessage messages
+        mLength (Message m) = 5 + 4 + B.length m
 
 putMessage :: Message -> ByteString
-putMessage message = runPut $ do
-  let encoded = encode message
-  putWord32be $ fromIntegral (B.length encoded)
-  putByteString encoded
-
-encode :: Message -> ByteString
-encode (Message message) = runPut $ do
+putMessage (Message message) = runPut $ do
+  putWord32be $ fromIntegral (5 + B.length message)
   putMessageMagic
   putWord32be (crc32 message)
   putByteString message
-  where putMessageMagic = putWord8 0
 
+putMessageMagic :: Put
+putMessageMagic = putWord8 0
