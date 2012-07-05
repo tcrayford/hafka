@@ -24,13 +24,17 @@ instance Producer ProducerSettings where
 
 fullProduceRequest :: ProducerSettings -> [Message] -> ByteString
 fullProduceRequest settings messages = runPut $ do
-  putWord32be $ fromIntegral (B.length body)
-  putByteString body
-  where
-    body = produceRequest settings messages
+  putWord32be $ fromIntegral $ produceRequestLength messages settings
+  produceRequest settings messages
 
-produceRequest :: ProducerSettings -> [Message] -> ByteString
-produceRequest settings@(ProducerSettings s) m = runPut $ do
+produceRequestLength :: [Message] -> ProducerSettings -> Int
+produceRequestLength messages (ProducerSettings stream) = 2 + streamLength stream + 4 + messageSetLength messages
+
+streamLength :: Stream -> Int
+streamLength (Stream (Topic t) (Partition p)) = 2 + (B.length t) + 4
+
+produceRequest :: ProducerSettings -> [Message] -> Put
+produceRequest settings@(ProducerSettings s) m = do
   putProduceRequestType
   putStream s
   putMessages m
@@ -41,8 +45,10 @@ putProduceRequestType = putWord16be $ fromIntegral raw
 
 putMessages :: [Message] -> Put
 putMessages messages = do
-  putWord32be $ fromIntegral (sum $ Prelude.map mLength messages)
+  putWord32be $ fromIntegral $ messageSetLength messages
   mapM_ putMessage messages
+
+messageSetLength = sum . Prelude.map mLength
   where mLength (Message m) = 5 + 4 + B.length m
 
 putMessage :: Message -> Put

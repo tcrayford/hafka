@@ -9,6 +9,7 @@ import Specs.Kafka.KeepAlive
 import Specs.Kafka.ParsingSpecs
 import Specs.Kafka.Unit.ConsumerSpecs
 import Specs.Kafka.Unit.KeepAliveSpecs
+import Specs.Kafka.Unit.ProducerSpecs
 import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck
 import qualified Bench.Benchmarks as Bench
@@ -20,6 +21,7 @@ main = hspec $
     reconnectingToClosedSocket
     parseConsumptionTest
     consumerSpecs
+    producerSpecs
     messageProperties
     benchSpecs
     integrationTests
