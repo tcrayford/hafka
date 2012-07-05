@@ -28,10 +28,14 @@ fullProduceRequest settings messages = runPut $ do
   produceRequest settings messages
 
 produceRequestLength :: [Message] -> ProducerSettings -> Int
-produceRequestLength messages (ProducerSettings stream) = 2 + streamLength stream + 4 + messageSetLength messages
+produceRequestLength messages (ProducerSettings stream) = requestType + streamLength stream + messageSet + messageSetLength messages
+  where requestType = 2
+        messageSet = 4
 
 streamLength :: Stream -> Int
-streamLength (Stream (Topic t) (Partition p)) = 2 + (B.length t) + 4
+streamLength (Stream (Topic t) (Partition p)) = topicLength + (B.length t) + partition
+  where topicLength = 2
+        partition = 4
 
 produceRequest :: ProducerSettings -> [Message] -> Put
 produceRequest settings@(ProducerSettings s) m = do
@@ -48,8 +52,13 @@ putMessages messages = do
   putWord32be $ fromIntegral $ messageSetLength messages
   mapM_ putMessage messages
 
+messageSetLength :: [Message] -> Int
 messageSetLength = sum . Prelude.map mLength
-  where mLength (Message m) = 5 + 4 + B.length m
+
+mLength (Message m) = messageMagic + length + crc + B.length m
+  where messageMagic = 1
+        length = 4
+        crc = 4
 
 putMessage :: Message -> Put
 putMessage (Message message) = do
