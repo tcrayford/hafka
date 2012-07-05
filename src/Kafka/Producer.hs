@@ -27,16 +27,6 @@ fullProduceRequest settings messages = runPut $ do
   putWord32be $ fromIntegral $ produceRequestLength messages settings
   produceRequest settings messages
 
-produceRequestLength :: [Message] -> ProducerSettings -> Int
-produceRequestLength messages (ProducerSettings stream) = requestType + streamLength stream + messageSet + messageSetLength messages
-  where requestType = 2
-        messageSet = 4
-
-streamLength :: Stream -> Int
-streamLength (Stream (Topic t) (Partition p)) = topicLength + (B.length t) + partition
-  where topicLength = 2
-        partition = 4
-
 produceRequest :: ProducerSettings -> [Message] -> Put
 produceRequest settings@(ProducerSettings s) m = do
   putProduceRequestType
@@ -52,6 +42,27 @@ putMessages messages = do
   putWord32be $ fromIntegral $ messageSetLength messages
   mapM_ putMessage messages
 
+putMessage :: Message -> Put
+putMessage (Message message) = do
+  putWord32be $ fromIntegral (5 + B.length message)
+  putMessageMagic
+  putWord32be (crc32 message)
+  putByteString message
+
+produceRequestLength :: [Message] -> ProducerSettings -> Int
+produceRequestLength messages (ProducerSettings stream) = requestType + streamLength stream + messageSet + messageSetLength messages
+  where requestType = 2
+        messageSet = 4
+
+streamLength :: Stream -> Int
+streamLength (Stream (Topic t) (Partition p)) = topicLength + (B.length t) + partition
+  where topicLength = 2
+        partition = 4
+
+
+putMessageMagic :: Put
+putMessageMagic = putWord8 0
+
 messageSetLength :: [Message] -> Int
 messageSetLength = sum . Prelude.map mLength
 
@@ -60,12 +71,3 @@ mLength (Message m) = messageMagic + length + crc + B.length m
         length = 4
         crc = 4
 
-putMessage :: Message -> Put
-putMessage (Message message) = do
-  putWord32be $ fromIntegral (5 + B.length message)
-  putMessageMagic
-  putWord32be (crc32 message)
-  putByteString message
-
-putMessageMagic :: Put
-putMessageMagic = putWord8 0
