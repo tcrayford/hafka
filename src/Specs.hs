@@ -11,7 +11,6 @@ import Specs.Kafka.Unit.ConsumerSpecs
 import Specs.Kafka.Unit.KeepAliveSpecs
 import Specs.Kafka.Unit.ProducerSpecs
 import Test.Hspec.Monadic
-import Test.Hspec.QuickCheck
 import qualified Bench.Benchmarks as Bench
 
 main :: IO ()
@@ -31,7 +30,7 @@ integrationTests =
   describe "the integrated producer -> consumer loop" $ do
     describe "basic consumer" $ do
       deliversWhenProducingMultipleMessages
-      prop "can pop and push a message" produceToConsume
+      produceToConsume
 
     describe "keep alive consumer" $ do
       keepAliveReconectsToClosedSockets

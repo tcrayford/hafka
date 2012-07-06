@@ -5,18 +5,18 @@ import Kafka.Producer
 import Kafka.Types
 import Specs.IntegrationHelper
 import Test.Hspec.Monadic
-import Test.QuickCheck
-import Test.QuickCheck.Monadic
 
-produceToConsume :: Stream -> Message -> Property
-produceToConsume stream message = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
+produceToConsume :: Spec
+produceToConsume = it "can push -> pop an message" $ do
+      let stream = Stream (Topic "produceToConsume") (Partition 4)
+          (testProducer, testConsumer) = coupledProducerConsumer stream
+          message = Message "produceToConsume"
+      result <- newEmptyMVar
 
-      run $ produce testProducer [message]
-      run $ recordMatching testConsumer message result
+      produce testProducer [message]
+      recordMatching testConsumer message result
 
-      run $ waitFor result message (return ())
+      waitFor result message (return ())
 
 deliversWhenProducingMultipleMessages :: Spec
 deliversWhenProducingMultipleMessages = it "delivers multiple messages" $ do
