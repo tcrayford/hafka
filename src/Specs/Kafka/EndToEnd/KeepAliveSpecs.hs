@@ -12,19 +12,19 @@ import System.Timeout
 import Test.HUnit
 import Test.Hspec.HUnit
 import Test.Hspec.Monadic
-import Test.QuickCheck
-import Test.QuickCheck.Monadic
 
-consumesWithKeepAlive :: Stream -> Message -> Property
-consumesWithKeepAlive stream message = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
+consumesWithKeepAlive :: Spec
+consumesWithKeepAlive = it "consumes with keep alive" $ do
+      let stream = Stream (Topic "consumesWithKeepAlive") (Partition 1)
+          message = Message "consumesWithKeepAlive"
+          (testProducer, testConsumer) = coupledProducerConsumer stream
+      result <- newEmptyMVar
 
-      run $ produce testProducer [message]
-      c <- run (keepAlive testConsumer)
-      run $ recordMatching c message result
+      produce testProducer [message]
+      c <- keepAlive testConsumer
+      recordMatching c message result
 
-      run $ waitFor result message (killSocket c)
+      waitFor result message (killSocket c)
 
 
 keepAliveReconectsToClosedSockets :: Spec

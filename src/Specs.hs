@@ -36,10 +36,10 @@ integrationTests =
     describe "keep alive consumer" $ do
       keepAliveReconectsToClosedSockets
       keepAliveConsumesMultipleMessages 
-      prop "can consume with a keepalive" consumesWithKeepAlive
+      consumesWithKeepAlive
 
     describe "keep alive producer" $ do
-      prop "can produce with keep alive" keepAliveProducerProduces
+      keepAliveProducerProduces
       keepAliveProducerReconnects
 
 benchSpecs :: Spec

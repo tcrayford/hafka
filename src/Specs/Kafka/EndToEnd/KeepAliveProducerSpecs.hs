@@ -15,16 +15,18 @@ import Test.Hspec.HUnit()
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
 
-keepAliveProducerProduces :: Stream -> Message -> Property
-keepAliveProducerProduces stream message = monadicIO $ do
-      let (testProducer, testConsumer) = coupledProducerConsumer stream
-      result <- run newEmptyMVar
+keepAliveProducerProduces :: Spec
+keepAliveProducerProduces = it "keep alive producer produces" $ do
+      let stream = Stream (Topic "keepAliveProducerProduces") (Partition 0)
+          (testProducer, testConsumer) = coupledProducerConsumer stream
+          message = Message "keepAliveProducerProduces"
+      result <- newEmptyMVar
 
-      p <- run $ keepAliveProducer testProducer
-      run $ produce p [message]
-      run $ recordMatching testConsumer message result
+      p <- keepAliveProducer testProducer
+      produce p [message]
+      recordMatching testConsumer message result
 
-      run $ waitFor result message (killSocket' p)
+      waitFor result message (killSocket' p)
 
 keepAliveProducerReconnects :: Spec
 keepAliveProducerReconnects = it "reconnects after the socket is closed" $ do
