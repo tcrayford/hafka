@@ -59,7 +59,6 @@ streamLength (Stream (Topic t) (Partition p)) = topicLength + (B.length t) + par
   where topicLength = 2
         partition = 4
 
-
 putMessageMagic :: Put
 putMessageMagic = putWord8 0
 
