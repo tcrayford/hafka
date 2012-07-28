@@ -6,7 +6,7 @@ ensure_empty_logs_dir() {
 
 start_server() {
   ensure_empty_logs_dir
-  (cd kafka/kafka &&
+  (cd kafka &&
     bin/kafka-server-start.sh config/server.properties > /dev/null 2>&1 &)
   wait_for_server
 }
@@ -36,7 +36,7 @@ find_server() {
 kill_server() {
   pid=$(find_server)
   kill -9 $pid
-  (cd kafka/kafka && bin/kafka-server-stop.sh)
+  (cd kafka && bin/kafka-server-stop.sh)
   wait_for_server_stop
   ensure_empty_logs_dir
 }
