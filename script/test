@@ -4,8 +4,7 @@ source script/test_helper
 main () {
   (start_server)
   script/build &&
-    (cd src &&
-      ./SpecRunner +RTS -N4)
+    ./Network/Kafka/SpecRunner +RTS -N4
   kill_server
 }
 

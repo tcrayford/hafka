@@ -3,9 +3,9 @@
 source script/test_helper
 
 main() {
-  (cd src && ghc --make Profiling/Main.hs -fforce-recomp -prof -auto-all -caf-all -O2 -rtsopts -o ./profiled)
+  ghc --make Network/Kafka/Profiling/Main.hs -fforce-recomp -prof -auto-all -caf-all -O2 -rtsopts -o ./Network/Kafka/profiled
   (start_server)
-  (cd src && ./profiled +RTS -P)
+  ./Network/Kafka/profiled +RTS -P
   kill_server
   script/clean-build > /dev/null 2>&1
 }

@@ -2,6 +2,6 @@
 
 set -e
 
-(cd src && echo "" | ghci -Wall -fwarn-tabs -Werror -v0 Specs.hs)
-find src -name "*.hs" | xargs hlint
+echo "" | ghci -Wall -fwarn-tabs -Werror -v0 Network/Kafka/Specs.hs
+find Network/Kafka -name "*.hs" | xargs hlint
 

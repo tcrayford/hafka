@@ -4,13 +4,11 @@ source script/test_helper
 
 main() {
   start_server
-  (cd src &&
-    ghc --make Main.hs -fforce-recomp -fhpc -o SpecRunner && ./SpecRunner)
-  (cd src &&
-    hpc markup SpecRunner)
+  ghc --make Network/Kafka/Main.hs -fforce-recomp -fhpc -o Network/Kafka/SpecRunner && ./Network/Kafka/SpecRunner
+  hpc markup SpecRunner
   kill_server
   script/clean-build
-  open src/hpc_index.html
+  open hpc_index.html
 }
 
 main

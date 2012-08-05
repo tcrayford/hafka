@@ -1,3 +1,3 @@
 #!/bin/bash
 
-(cd src && ghc --make Main.hs -threaded -fforce-recomp -O2 -rtsopts -o SpecRunner)
+ghc --make Network/Kafka/Main.hs -threaded -fforce-recomp -O2 -rtsopts -o Network/Kafka/SpecRunner
