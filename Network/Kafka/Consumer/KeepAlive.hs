@@ -1,3 +1,4 @@
+{-# LANGUAGE DoAndIfThenElse #-}
 module Network.Kafka.Consumer.KeepAlive where
 import Control.Concurrent.MVar
 import Data.ByteString.Char8(ByteString)
