@@ -5,7 +5,7 @@ import qualified Data.ByteString.Char8 as B
 import Network.Kafka.Consumer
 import Network.Kafka.Consumer.ByteReader
 import Network.Kafka.Consumer.Basic
-import Network.Kafka.Network
+import Network.Kafka.Connection
 import Network.Kafka.Types
 import System.IO
 

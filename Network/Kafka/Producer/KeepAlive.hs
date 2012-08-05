@@ -1,6 +1,6 @@
 module Network.Kafka.Producer.KeepAlive where
 import Network.Kafka.Producer
-import Network.Kafka.Network
+import Network.Kafka.Connection
 import Control.Concurrent.MVar
 import System.IO
 import qualified Data.ByteString.Char8 as B
