@@ -1,6 +1,6 @@
-module Kafka.Producer.KeepAlive where
-import Kafka.Producer
-import Kafka.Network
+module Network.Kafka.Producer.KeepAlive where
+import Network.Kafka.Producer
+import Network.Kafka.Network
 import Control.Concurrent.MVar
 import System.IO
 import qualified Data.ByteString.Char8 as B

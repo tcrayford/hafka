@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Specs.Kafka.Arbitrary where
+module Network.Kafka.Specs.Kafka.Arbitrary where
 import qualified Data.ByteString.Char8 as B
 import Test.QuickCheck
-import Kafka.Types
+import Network.Kafka.Types
 
 instance Arbitrary Topic where
   arbitrary = do

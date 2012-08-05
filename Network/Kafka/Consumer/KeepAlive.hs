@@ -1,12 +1,12 @@
-module Kafka.Consumer.KeepAlive where
+module Network.Kafka.Consumer.KeepAlive where
 import Control.Concurrent.MVar
 import Data.ByteString.Char8(ByteString)
 import qualified Data.ByteString.Char8 as B
-import Kafka.Consumer
-import Kafka.Consumer.ByteReader
-import Kafka.Consumer.Basic
-import Kafka.Network
-import Kafka.Types
+import Network.Kafka.Consumer
+import Network.Kafka.Consumer.ByteReader
+import Network.Kafka.Consumer.Basic
+import Network.Kafka.Network
+import Network.Kafka.Types
 import System.IO
 
 data KeepAliveConsumer = KeepAliveConsumer {

@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Specs.Kafka.EndToEnd.KeepAliveSpecs where
+module Network.Kafka.Specs.Kafka.EndToEnd.KeepAliveSpecs where
 import Control.Concurrent.MVar
 import Control.Monad
-import Kafka.Consumer
-import Kafka.Consumer.KeepAlive
-import Kafka.Producer
-import Kafka.Types
-import Specs.IntegrationHelper
+import Network.Kafka.Consumer
+import Network.Kafka.Consumer.KeepAlive
+import Network.Kafka.Producer
+import Network.Kafka.Types
+import Network.Kafka.Specs.IntegrationHelper
 import System.IO
 import System.Timeout
 import Test.HUnit

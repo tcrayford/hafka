@@ -1,4 +1,4 @@
-module Kafka.Types where
+module Network.Kafka.Types where
 import Data.ByteString.Char8(ByteString)
 
 newtype Topic = Topic ByteString deriving (Show, Eq)

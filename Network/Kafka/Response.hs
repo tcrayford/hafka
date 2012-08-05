@@ -1,7 +1,7 @@
-module Kafka.Response where
-import Kafka.Types
+module Network.Kafka.Response where
+import Network.Kafka.Types
 import Data.Serialize.Get
-import Kafka.Parsing
+import Network.Kafka.Parsing
 import Data.ByteString.Char8(ByteString)
 
 parseErrorCode :: ByteString -> ErrorCode

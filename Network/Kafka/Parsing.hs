@@ -1,4 +1,4 @@
-module Kafka.Parsing where
+module Network.Kafka.Parsing where
 import Data.ByteString.Char8
 import Data.Serialize.Get
 

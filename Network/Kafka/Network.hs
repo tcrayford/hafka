@@ -1,4 +1,4 @@
-module Kafka.Network(
+module Network.Kafka.Network(
     N.PortID(..)
   , N.connectTo
   , connectToKafka

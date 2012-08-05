@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Specs.Kafka.KeepAlive where
-import Kafka.Consumer
-import Kafka.Consumer.Basic
-import Kafka.Consumer.KeepAlive
-import Kafka.Types
+module Network.Kafka.Specs.Kafka.KeepAlive where
+import Network.Kafka.Consumer
+import Network.Kafka.Consumer.Basic
+import Network.Kafka.Consumer.KeepAlive
+import Network.Kafka.Types
 import Test.HUnit
 import Test.Hspec.HUnit()
 import Test.Hspec.Monadic

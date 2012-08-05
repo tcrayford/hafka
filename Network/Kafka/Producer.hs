@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Kafka.Producer where
-import Kafka.Request
-import Kafka.Types
+module Network.Kafka.Producer where
+import Network.Kafka.Request
+import Network.Kafka.Types
 import Data.ByteString.Char8
 import qualified Data.ByteString.Char8 as B
 import Network

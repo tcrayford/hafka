@@ -1,8 +1,8 @@
-module Specs.IntegrationHelper where
-import Kafka.Producer
-import Kafka.Consumer
-import Kafka.Consumer.Basic
-import Kafka.Types
+module Network.Kafka.Specs.IntegrationHelper where
+import Network.Kafka.Producer
+import Network.Kafka.Consumer
+import Network.Kafka.Consumer.Basic
+import Network.Kafka.Types
 import Control.Concurrent.MVar
 import System.Timeout
 import Control.Concurrent(forkIO, killThread, myThreadId)

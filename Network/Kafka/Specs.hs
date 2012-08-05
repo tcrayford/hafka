@@ -1,17 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Specs where
-import Specs.Kafka.Arbitrary()
-import Specs.Kafka.EndToEnd.BasicConsumerSpecs
-import Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
-import Specs.Kafka.EndToEnd.KeepAliveSpecs
-import Specs.Kafka.KeepAlive
-import Specs.Kafka.ParsingSpecs
-import Specs.Kafka.Unit.ConsumerSpecs
-import Specs.Kafka.Unit.KeepAliveSpecs
-import Specs.Kafka.Unit.ProducerSpecs
+module Network.Kafka.Specs where
+import Network.Kafka.Specs.Kafka.Arbitrary()
+import Network.Kafka.Specs.Kafka.EndToEnd.BasicConsumerSpecs
+import Network.Kafka.Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
+import Network.Kafka.Specs.Kafka.EndToEnd.KeepAliveSpecs
+import Network.Kafka.Specs.Kafka.KeepAlive
+import Network.Kafka.Specs.Kafka.ParsingSpecs
+import Network.Kafka.Specs.Kafka.Unit.ConsumerSpecs
+import Network.Kafka.Specs.Kafka.Unit.KeepAliveSpecs
+import Network.Kafka.Specs.Kafka.Unit.ProducerSpecs
 import Test.Hspec.Monadic
-import qualified Bench.Benchmarks as Bench
+import qualified Network.Kafka.Bench.Benchmarks as Bench
 
 main :: IO ()
 main = hspec $

@@ -1,6 +1,6 @@
-module Kafka.Request where
+module Network.Kafka.Request where
 import Data.Serialize.Put
-import Kafka.Types
+import Network.Kafka.Types
 import qualified Data.ByteString.Char8 as B
 
 putStream :: Stream -> Put

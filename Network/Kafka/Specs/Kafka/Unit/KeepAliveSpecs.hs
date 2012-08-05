@@ -1,9 +1,9 @@
-module Specs.Kafka.Unit.KeepAliveSpecs where
+module Network.Kafka.Specs.Kafka.Unit.KeepAliveSpecs where
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit
 import Test.HUnit
-import Kafka.Network
-import Kafka.Consumer.KeepAlive
+import Network.Kafka.Network
+import Network.Kafka.Consumer.KeepAlive
 import System.IO
 
 reconnectingToClosedSocket :: Spec

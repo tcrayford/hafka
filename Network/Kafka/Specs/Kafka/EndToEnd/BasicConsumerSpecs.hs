@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Specs.Kafka.EndToEnd.BasicConsumerSpecs where
+module Network.Kafka.Specs.Kafka.EndToEnd.BasicConsumerSpecs where
 import Control.Concurrent.MVar
-import Kafka.Producer
-import Kafka.Types
-import Specs.IntegrationHelper
+import Network.Kafka.Producer
+import Network.Kafka.Types
+import Network.Kafka.Specs.IntegrationHelper
 import Test.Hspec.Monadic
 
 produceToConsume :: Spec

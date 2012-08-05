@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Specs.Kafka.ParsingSpecs where
+module Network.Kafka.Specs.Kafka.ParsingSpecs where
 import Data.Serialize.Put
-import Kafka.Consumer
-import Kafka.Consumer.Basic
-import Kafka.Producer
-import Kafka.Response
-import Kafka.Types
-import Specs.Kafka.Arbitrary()
+import Network.Kafka.Consumer
+import Network.Kafka.Consumer.Basic
+import Network.Kafka.Producer
+import Network.Kafka.Response
+import Network.Kafka.Types
+import Network.Kafka.Specs.Kafka.Arbitrary()
 import Test.HUnit
 import Test.Hspec.HUnit()
 import Test.Hspec.Monadic

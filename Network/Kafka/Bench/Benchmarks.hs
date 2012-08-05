@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Bench.Benchmarks where
+module Network.Kafka.Bench.Benchmarks where
 import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar
 import Control.DeepSeq
@@ -9,15 +9,15 @@ import Control.Monad(void, mapM_)
 import Control.Monad.Trans(liftIO)
 import Criterion.Config(defaultConfig)
 import Criterion.Main
-import Kafka.Consumer
-import Kafka.Consumer.Basic
-import Kafka.Consumer.KeepAlive
-import Kafka.Producer
-import Kafka.Producer.KeepAlive
-import Kafka.Types
-import Specs.IntegrationHelper
-import Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
-import Specs.Kafka.EndToEnd.KeepAliveSpecs
+import Network.Kafka.Consumer
+import Network.Kafka.Consumer.Basic
+import Network.Kafka.Consumer.KeepAlive
+import Network.Kafka.Producer
+import Network.Kafka.Producer.KeepAlive
+import Network.Kafka.Types
+import Network.Kafka.Specs.IntegrationHelper
+import Network.Kafka.Specs.Kafka.EndToEnd.KeepAliveProducerSpecs
+import Network.Kafka.Specs.Kafka.EndToEnd.KeepAliveSpecs
 import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Put
 

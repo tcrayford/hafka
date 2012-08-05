@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Kafka.Consumer where
+module Network.Kafka.Consumer where
 import Control.Concurrent(threadDelay)
 import Data.ByteString.Char8(ByteString)
 import Data.Serialize.Get
 import Data.Serialize.Put
-import Kafka.Consumer.ByteReader
-import Kafka.Parsing
-import Kafka.Response
-import Kafka.Request
-import Kafka.Types
+import Network.Kafka.Consumer.ByteReader
+import Network.Kafka.Parsing
+import Network.Kafka.Response
+import Network.Kafka.Request
+import Network.Kafka.Types
 import qualified Data.ByteString.Char8 as B
 
 class Consumer c where

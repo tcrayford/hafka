@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Specs.Kafka.Unit.ConsumerSpecs where
-import Kafka.Consumer
-import Kafka.Types
-import Specs.Kafka.Arbitrary()
+module Network.Kafka.Specs.Kafka.Unit.ConsumerSpecs where
+import Network.Kafka.Consumer
+import Network.Kafka.Types
+import Network.Kafka.Specs.Kafka.Arbitrary()
 import Test.HUnit
 import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck

@@ -1,3 +1,3 @@
-import qualified Bench.Benchmarks as Bench
+import qualified Network.Kafka.Bench.Benchmarks as Bench
 
 main = Bench.main

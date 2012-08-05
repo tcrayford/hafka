@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Specs.Kafka.Unit.ProducerSpecs where
+module Network.Kafka.Specs.Kafka.Unit.ProducerSpecs where
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
 import Test.HUnit
-import Kafka.Types
-import Kafka.Producer
+import Network.Kafka.Types
+import Network.Kafka.Producer
 
 producerSpecs = describe "producer" $ do
   it "the stream length is always 6 + length of topic" $ do

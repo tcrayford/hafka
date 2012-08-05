@@ -1,4 +1,4 @@
-module Kafka.Consumer.ByteReader where
+module Network.Kafka.Consumer.ByteReader where
 import Data.ByteString.Char8(ByteString)
 import qualified Data.ByteString.Char8 as B
 import System.IO(Handle)
