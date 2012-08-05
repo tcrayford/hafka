@@ -1,9 +1,9 @@
 *.o
 *.hi
-src/perf
-src/*.html
+Network/Kafka/perf
+Network/Kafka/*.html
 .hpc
 *.tix
-src/SpecRunner
-src/profiled
-src/profiled.prof
+Network/Kafka/SpecRunner
+Network/Kafka/profiled
+Network/Kafka/profiled.prof
