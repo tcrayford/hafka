@@ -1,12 +1,6 @@
 module Network.Kafka.Consumer.Basic where
 import Network.Kafka.Consumer
-import Control.Concurrent(threadDelay)
-import Data.ByteString.Char8(ByteString)
-import Data.Serialize.Get
-import Data.Serialize.Put
 import Network.Kafka.Consumer.ByteReader
-import Network.Kafka.Parsing
-import Network.Kafka.Response
 import Network.Kafka.Types
 import Network
 import System.IO

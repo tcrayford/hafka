@@ -5,7 +5,7 @@ import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar
 import Control.DeepSeq
 import Control.Exception(evaluate)
-import Control.Monad(void, mapM_)
+import Control.Monad(void)
 import Control.Monad.Trans(liftIO)
 import Criterion.Config(defaultConfig)
 import Criterion.Main

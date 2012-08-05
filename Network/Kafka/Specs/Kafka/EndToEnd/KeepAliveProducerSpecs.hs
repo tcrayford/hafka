@@ -1,19 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Network.Kafka.Specs.Kafka.EndToEnd.KeepAliveProducerSpecs where
 import Control.Concurrent.MVar
-import Control.Monad
-import Network.Kafka.Consumer
 import Network.Kafka.Producer
 import Network.Kafka.Producer.KeepAlive
 import Network.Kafka.Types
 import Network.Kafka.Specs.IntegrationHelper
 import System.IO
 import System.Timeout
-import Test.HUnit
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
-import Test.QuickCheck
-import Test.QuickCheck.Monadic
 
 keepAliveProducerProduces :: Spec
 keepAliveProducerProduces = it "keep alive producer produces" $ do

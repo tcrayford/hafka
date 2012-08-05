@@ -1,9 +1,8 @@
 module Network.Kafka.Specs.Kafka.Unit.KeepAliveSpecs where
 import Test.Hspec.Monadic
-import Test.Hspec.HUnit
+import Test.Hspec.HUnit()
 import Test.HUnit
 import Network.Kafka.Connection
-import Network.Kafka.Consumer.KeepAlive
 import System.IO
 
 reconnectingToClosedSocket :: Spec

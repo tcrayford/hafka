@@ -8,6 +8,7 @@ import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck
 import qualified Data.ByteString.Char8 as B
 
+consumerSpecs :: Spec
 consumerSpecs = describe "general purpose consumers" $ do
   describe "dropErrorCode" $ do
     it "drops the code if it is successful" $

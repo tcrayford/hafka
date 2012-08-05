@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Network.Kafka.Specs.Kafka.KeepAlive where
-import Network.Kafka.Consumer
 import Network.Kafka.Consumer.Basic
 import Network.Kafka.Consumer.KeepAlive
 import Network.Kafka.Types

@@ -8,7 +8,6 @@ import Network
 import Data.Serialize.Put
 import Data.Digest.CRC32
 import System.IO
-import Control.Monad
 
 data ProducerSettings = ProducerSettings Stream
 
@@ -28,7 +27,7 @@ fullProduceRequest settings messages = runPut $ do
   produceRequest settings messages
 
 produceRequest :: ProducerSettings -> [Message] -> Put
-produceRequest settings@(ProducerSettings s) m = do
+produceRequest (ProducerSettings s) m = do
   putProduceRequestType
   putStream s
   putMessages m
@@ -55,7 +54,7 @@ produceRequestLength messages (ProducerSettings stream) = requestType + streamLe
         messageSet = 4
 
 streamLength :: Stream -> Int
-streamLength (Stream (Topic t) (Partition p)) = topicLength + (B.length t) + partition
+streamLength (Stream (Topic t) (Partition _)) = topicLength + B.length t + partition
   where topicLength = 2
         partition = 4
 
@@ -65,8 +64,9 @@ putMessageMagic = putWord8 0
 messageSetLength :: [Message] -> Int
 messageSetLength = sum . Prelude.map mLength
 
-mLength (Message m) = messageMagic + length + crc + B.length m
+mLength :: Message -> Int
+mLength (Message m) = messageMagic + rawLength + crc + B.length m
   where messageMagic = 1
-        length = 4
+        rawLength = 4
         crc = 4
 
