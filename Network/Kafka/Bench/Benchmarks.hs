@@ -107,7 +107,7 @@ roundtripKeepAliveProducer = do
   waitFor result (last messages) (killSocket' p)
 
 messagesWithPrefix :: B.ByteString -> [Message]
-messagesWithPrefix prefix = map f . take 11 $ range
+messagesWithPrefix prefix = map f . take 15 $ range
   where f n = Message (prefix `B.append` B.pack (show n))
         range :: [Int]
         range = [0..]
