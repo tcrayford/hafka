@@ -91,7 +91,7 @@ parseMessageSet' a messages processed totalLength settings
   | otherwise = (messages, settings)
   where messageSize = parseMessageSize processed a
         parsed = parseMessage $ bSplice processed (messageSize + 4) a
-        newSettings = increaseOffsetBy settings newProcessed
+        newSettings = increaseOffsetBy settings processed
         newMessages = messages ++ [parsed]
         newProcessed = processed + 4 + messageSize
 
